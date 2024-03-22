@@ -1,0 +1,11 @@
+package "server"
+version "1.0"
+purpose "Employee Database Server"
+description "Run a server to manage employees"
+versiontext "Employee Database Server"
+
+#----------------------------
+# independent options
+#----------------------------
+# Mandatory option
+option "port"    p   "Listen port"        int       typestr="portnumber"         required
