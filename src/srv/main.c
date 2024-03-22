@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
 	struct gengetopt_args_info args;
-	if(cmdline_parser(argc, argv, &args)){
+	if (cmdline_parser(argc, argv, &args)){
         perror("Command line parser error\n");
         exit(EXIT_FAILURE);
 	}
@@ -28,6 +28,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    if (close_socket(server_socket) == STATUS_ERROR) {
+        fprintf(stderr, "Could not close the socket\n");
+        exit(EXIT_FAILURE);
+    }
 
 
 	cmdline_parser_free(&args);
