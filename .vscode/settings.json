@@ -3,6 +3,11 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "main.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "cstdlib": "c",
+        "types.h": "c",
+        "inet.h": "c",
+        "socket.h": "c",
+        "threads.h": "c"
     }
 }

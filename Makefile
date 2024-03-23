@@ -39,9 +39,10 @@ clean:
 
 # Dependencies
 # Server
-obj/srv/main.o: src/srv/main.c inc/srv/main.h inc/common.h inc/srv/args/$(PROGRAM_OPT).h inc/srv/socket.h
+obj/srv/main.o: src/srv/main.c inc/srv/main.h inc/common.h inc/srv/args/$(PROGRAM_OPT).h inc/srv/socket.h inc/srv/threads.h
 obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h src/srv/args/$(PROGRAM_OPT).ggo
 obj/srv/socket.o: src/srv/socket.c inc/srv/socket.h inc/common.h
+obj/srv/thread.o: src/srv/thread.c inc/srv/thread.h inc/common.h 
 # Client
 obj/cli/main.o: src/cli/main.c inc/cli/main.h inc/common.h inc/cli/args/$(PROGRAM_OPT).h 
 obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h src/cli/args/$(PROGRAM_OPT).ggo

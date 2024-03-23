@@ -13,7 +13,7 @@
 
 #include "common.h"
 
-int init_socket(int server_port, int *server_socket_out){
+int init_server_socket(int server_port, int *p_server_socket_out){
 
     int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket == -1) {
@@ -43,13 +43,12 @@ int init_socket(int server_port, int *server_socket_out){
         return STATUS_ERROR;
     }
 
-    printf("Server listening on port %d...\n", server_port);
-    *server_socket_out = server_socket;
-
+    printf("Server listening for UDP messages at port %d\n", server_port);    
+    *p_server_socket_out = server_socket;
     return STATUS_SUCCESS;
 }
 
-int close_socket(int server_socket){
+int close_server_socket(int server_socket){
     if (close(server_socket) == -1) {
         fprintf(stderr, "Error closing socket\n");
         return STATUS_ERROR;
