@@ -1,8 +1,8 @@
 package "server"
 version "1.0"
-purpose "Employee Database Server"
-description "Run a server to manage employees"
-versiontext "Employee Database Server"
+purpose "Sensor server simulator"
+description "Run a server to receive sensor data"
+versiontext "Sensor server simulator"
 
 #----------------------------
 # independent options

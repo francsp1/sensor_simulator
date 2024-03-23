@@ -43,7 +43,7 @@ int init_server_socket(int server_port, int *p_server_socket_out){
         return STATUS_ERROR;
     }
 
-    printf("Server listening for UDP messages at port %d\n", server_port);    
+    printf("Server listening for UDP messages on port %d\n", server_port);    
     *p_server_socket_out = server_socket;
     return STATUS_SUCCESS;
 }

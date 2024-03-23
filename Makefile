@@ -18,9 +18,9 @@ OBJ_CLI =$(OBJ_C) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
 all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $(TARGET_CLI)
 
 run: clean default
-	./$(TARGET_SRV) --file "./mynewdb.db" --ip "127.0.0.1" --port 8080 --new 
-#	./$(TARGET_CLI) 127.0.0.1
-#	kill -9 $$(pidof dbserver)
+	echo "-------- Running server --------"
+	./$(TARGET_SRV) --port 8080 
+
 
 default: clean $(TARGET_SRV) $(TARGET_CLI)
 
@@ -35,7 +35,6 @@ clean:
 	rm -f obj/cli/*.o
 	rm -f obj/*.o
 	rm -f bin/*
-#	rm -f *.db
 
 # Dependencies
 # Server

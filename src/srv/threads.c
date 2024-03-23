@@ -18,7 +18,7 @@ int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_s
     *thread_params = calloc(NUMBER_OF_SENSORS, sizeof(thread_params_t));
     if (*thread_params == NULL){
         fprintf(stderr, "Error allocating memory for thread_params\n");
-        free(*tids);
+        free_tids(tids);
         return STATUS_ERROR;
     }
 
@@ -29,12 +29,9 @@ int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_s
 
     
     for (int i = 0; i < NUMBER_OF_SENSORS; i++){
-        printf("Creating thread %d\n", i);
-		if ((pthread_create(&((*tids)[i]), NULL, handle_client, &((*thread_params)[i]) )) != 0) {
-            fprintf(stderr, "Error creating thread\n");
-            free(*tids);
-            free(*thread_params);
-            close(server_socket);
+		if ((pthread_create(&((*tids)[i]), NULL, handle_client, &((*thread_params)[i]) )) != 0){
+            fprintf(stderr, "Error creating thread %d\n", i);
+            free_threads(tids, thread_params);
             return STATUS_ERROR;
         }
 	}
@@ -42,4 +39,30 @@ int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_s
     return STATUS_SUCCESS;
 }
 
+void free_tids(pthread_t **tids){
+    free(*tids);
+    *tids = NULL;
+}
 
+void free_thread_params(thread_params_t **thread_params){
+    free(*thread_params);
+    *thread_params = NULL;
+}
+
+void free_threads(pthread_t **tids, thread_params_t **thread_params){
+    free_tids(tids);
+    free_thread_params(thread_params);
+}
+
+int join_threads(pthread_t *tids){
+    printf("Joining threads\n");
+
+    for (int i = 0; i < NUMBER_OF_SENSORS; i++){
+        if (pthread_join(tids[i], NULL) != 0){
+            fprintf(stderr, "Error joining thread %d\n", i);
+            return STATUS_ERROR;
+        }
+    }
+
+    return STATUS_SUCCESS;
+}

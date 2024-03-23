@@ -48,32 +48,23 @@ int main(int argc, char *argv[]) {
     thread_params_t *thread_params = NULL;
     if (init_threads(&tids, &thread_params, server_socket, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing threads\n");
+        close_server_socket(server_socket);
         exit(EXIT_FAILURE);
     }
 
-    sleep(10);
-
     /*
-    socklen_t udp_client_endpoint_length = sizeof(struct sockaddr_in);
-	struct sockaddr_in client_endpoint = {0};
-	ssize_t read_bytes;
-    uint8_t buffer[MAX_BUFFER_SIZE] = {0};
-
-    
-    while (1) {
-        memset(buffer,0,sizeof(buffer));
-
-        printf("Waiting for a client message...\n");
-        if ((read_bytes = recvfrom(server_socket, buffer, sizeof(uint8_t) * MAX_BUFFER_SIZE , 0, (struct sockaddr *) &client_endpoint, &udp_client_endpoint_length)) == -1) {
-            fprintf(stderr, "Error receiving data from client\n");
-            exit(EXIT_FAILURE);
-        }
-        printf("Received %ld bytes from %s:%d - %s\n", read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port), buffer);
+    if (join_threads(tids) == STATUS_ERROR) {
+        fprintf(stderr, "Could not join all threads\n");
+        close_server_socket(server_socket);
+        free_threads(&tids, &thread_params);
+        exit(EXIT_FAILURE);
     }
     */
+    while(1){
+        sleep(1);
+    }
 
-    free(tids);
-    free(thread_params);
+    free_threads(&tids, &thread_params);
 
     if (close_server_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
@@ -89,7 +80,24 @@ void *handle_client(void *arg){
 
     thread_params_t *params = (thread_params_t *) arg;
 
-    printf("Thread %d\n", params->id);
+    socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
+	struct sockaddr_in client_endpoint;
+    memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
+	ssize_t read_bytes;
+    uint8_t buffer[MAX_BUFFER_SIZE];
+
+    while(1){
+        memset(buffer,0,sizeof(buffer));
+
+        printf("Thread %d is waiting for a client message...\n", params->id);
+
+        if ((read_bytes = recvfrom(params->server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
+            fprintf(stderr, "Error receiving data from client\n");
+            continue;
+        }
+        printf("Thread %d received %ld bytes from %s:%d - %s\n", params->id, read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port), buffer);
+
+    }
 
     return NULL;
 }
