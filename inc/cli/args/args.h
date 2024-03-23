@@ -21,12 +21,12 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_PACKAGE
 /** @brief the program name (used for printing errors) */
-#define CMDLINE_PARSER_PACKAGE "Example of .ggo file"
+#define CMDLINE_PARSER_PACKAGE "client"
 #endif
 
 #ifndef CMDLINE_PARSER_PACKAGE_NAME
 /** @brief the complete program name (used for help and version) */
-#define CMDLINE_PARSER_PACKAGE_NAME "Example of .ggo file"
+#define CMDLINE_PARSER_PACKAGE_NAME "client"
 #endif
 
 #ifndef CMDLINE_PARSER_VERSION
@@ -45,15 +45,11 @@ struct gengetopt_args_info
   int port_arg;	/**< @brief port.  */
   char * port_orig;	/**< @brief port original value given at command line.  */
   const char *port_help; /**< @brief port help description.  */
-  char * client_arg;	/**< @brief client.  */
-  char * client_orig;	/**< @brief client original value given at command line.  */
-  const char *client_help; /**< @brief client help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int ip_given ;	/**< @brief Whether ip was given.  */
   unsigned int port_given ;	/**< @brief Whether port was given.  */
-  unsigned int client_given ;	/**< @brief Whether client was given.  */
 
 } ;
 

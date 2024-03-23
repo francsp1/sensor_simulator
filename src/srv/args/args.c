@@ -25,13 +25,13 @@
 
 #include "args.h"
 
-const char *gengetopt_args_info_purpose = "Employee Database Server";
+const char *gengetopt_args_info_purpose = "Sensor server simulator";
 
 const char *gengetopt_args_info_usage = "Usage: server [OPTION]...";
 
-const char *gengetopt_args_info_versiontext = "Employee Database Server";
+const char *gengetopt_args_info_versiontext = "Sensor server simulator";
 
-const char *gengetopt_args_info_description = "Run a server to manage employees";
+const char *gengetopt_args_info_description = "Run a server to receive sensor data";
 
 const char *gengetopt_args_info_help[] = {
   "  -h, --help             Print help and exit",

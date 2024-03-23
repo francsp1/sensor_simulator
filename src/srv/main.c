@@ -20,11 +20,8 @@
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
-    // Disable buffering for stdout
-    setvbuf(stdout, NULL, _IONBF, 0);
-
-    // Disable buffering for stderr
-    setvbuf(stderr, NULL, _IONBF, 0);
+    // Disable buffering for stdout and stderr
+    disable_buffering();
     
 	struct gengetopt_args_info args;
 	if (cmdline_parser(argc, argv, &args)){

@@ -11,6 +11,11 @@ int validate_port(int server_port) {
     return STATUS_SUCCESS;
 }
 
+void disable_buffering(void) {
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+}
+
 void common(void){
     printf("Common\n");
 }

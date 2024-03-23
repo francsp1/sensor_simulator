@@ -1,8 +1,8 @@
-package "Example of .ggo file"
+package "client"
 version "1.0"
-purpose "Simple example (optional)"
-description "description needed (optional)"
-versiontext "versiontext needed (optional)"
+purpose "Sensor simutaion client"
+description "Simulate data sent by sensors"
+versiontext "Sensor simutaion client"
 
 #----------------------------
 # independent options
@@ -11,7 +11,6 @@ versiontext "versiontext needed (optional)"
 #option "folder" f "folder" string typestr="dirname" required
 option "ip"     i  "ip"      string    required
 option "port"   p  "port"    int       required
-option "client" c  "client"  string    required 
 
 # Optional
 #option "num" n "number" int optional

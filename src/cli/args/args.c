@@ -25,20 +25,19 @@
 
 #include "args.h"
 
-const char *gengetopt_args_info_purpose = "Simple example (optional)";
+const char *gengetopt_args_info_purpose = "Sensor simutaion client";
 
-const char *gengetopt_args_info_usage = "Usage: Example of .ggo file [OPTION]...";
+const char *gengetopt_args_info_usage = "Usage: client [OPTION]...";
 
-const char *gengetopt_args_info_versiontext = "versiontext needed (optional)";
+const char *gengetopt_args_info_versiontext = "Sensor simutaion client";
 
-const char *gengetopt_args_info_description = "description needed (optional)";
+const char *gengetopt_args_info_description = "Simulate data sent by sensors";
 
 const char *gengetopt_args_info_help[] = {
-  "  -h, --help           Print help and exit",
-  "  -V, --version        Print version and exit",
-  "  -i, --ip=STRING      ip",
-  "  -p, --port=INT       port",
-  "  -c, --client=STRING  client",
+  "  -h, --help       Print help and exit",
+  "  -V, --version    Print version and exit",
+  "  -i, --ip=STRING  ip",
+  "  -p, --port=INT   port",
     0
 };
 
@@ -69,7 +68,6 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->version_given = 0 ;
   args_info->ip_given = 0 ;
   args_info->port_given = 0 ;
-  args_info->client_given = 0 ;
 }
 
 static
@@ -79,8 +77,6 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->ip_arg = NULL;
   args_info->ip_orig = NULL;
   args_info->port_orig = NULL;
-  args_info->client_arg = NULL;
-  args_info->client_orig = NULL;
   
 }
 
@@ -93,7 +89,6 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->version_help = gengetopt_args_info_help[1] ;
   args_info->ip_help = gengetopt_args_info_help[2] ;
   args_info->port_help = gengetopt_args_info_help[3] ;
-  args_info->client_help = gengetopt_args_info_help[4] ;
   
 }
 
@@ -186,8 +181,6 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->ip_arg));
   free_string_field (&(args_info->ip_orig));
   free_string_field (&(args_info->port_orig));
-  free_string_field (&(args_info->client_arg));
-  free_string_field (&(args_info->client_orig));
   
   
 
@@ -226,8 +219,6 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "ip", args_info->ip_orig, 0);
   if (args_info->port_given)
     write_into_file(outfile, "port", args_info->port_orig, 0);
-  if (args_info->client_given)
-    write_into_file(outfile, "client", args_info->client_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -353,12 +344,6 @@ cmdline_parser_required2 (struct gengetopt_args_info *args_info, const char *pro
   if (! args_info->port_given)
     {
       fprintf (stderr, "%s: '--port' ('-p') option required%s\n", prog_name, (additional_error ? additional_error : ""));
-      error_occurred = 1;
-    }
-  
-  if (! args_info->client_given)
-    {
-      fprintf (stderr, "%s: '--client' ('-c') option required%s\n", prog_name, (additional_error ? additional_error : ""));
       error_occurred = 1;
     }
   
@@ -528,11 +513,10 @@ cmdline_parser_internal (
         { "version",	0, NULL, 'V' },
         { "ip",	1, NULL, 'i' },
         { "port",	1, NULL, 'p' },
-        { "client",	1, NULL, 'c' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVi:p:c:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVi:p:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -568,18 +552,6 @@ cmdline_parser_internal (
               &(local_args_info.port_given), optarg, 0, 0, ARG_INT,
               check_ambiguity, override, 0, 0,
               "port", 'p',
-              additional_error))
-            goto failure;
-        
-          break;
-        case 'c':	/* client.  */
-        
-        
-          if (update_arg( (void *)&(args_info->client_arg), 
-               &(args_info->client_orig), &(args_info->client_given),
-              &(local_args_info.client_given), optarg, 0, 0, ARG_STRING,
-              check_ambiguity, override, 0, 0,
-              "client", 'c',
               additional_error))
             goto failure;
         

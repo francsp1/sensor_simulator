@@ -10,6 +10,7 @@
 #define NUMBER_OF_SENSORS (3)
 
 int validate_port(int server_port);
+void disable_buffering(void);
 
 void common(void);
 
