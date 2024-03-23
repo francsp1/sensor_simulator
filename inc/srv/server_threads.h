@@ -1,10 +1,11 @@
 #ifndef _THREADS_H
 #define _THREADS_H
 
+#include <stdint.h>
 #include <pthread.h>
 
 typedef struct thread_params {
-	int id;
+	uint32_t id;
     int server_socket;
 }thread_params_t;
 

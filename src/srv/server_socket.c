@@ -49,3 +49,35 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     
     return STATUS_SUCCESS;
 }
+
+int receive_from_socket(int server_socket, uint8_t *buffer){
+    socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
+    struct sockaddr_in client_endpoint;
+    memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
+    ssize_t read_bytes;
+
+    printf("Waiting for a client message...\n");
+
+    if ((read_bytes = recvfrom(server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
+        fprintf(stderr, "Error receiving data from client\n");
+        return STATUS_ERROR;
+    }
+    //printf("Thread %d received %ld bytes from %s:%d - %s\n", params->id, read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port), buffer);
+    printf("Received %ld bytes from %s:%d\n", read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
+
+    return STATUS_SUCCESS;
+}
+
+int deserialize_data(uint8_t *buffer, proto_send_data_t *p_data_out) {
+
+    proto_send_data_t *data = (proto_send_data_t *) buffer;
+    data->hdr.type = ntohl(data->hdr.type);
+    data->hdr.sensor_id = ntohl(data->hdr.sensor_id);
+    data->hdr.len = ntohs(data->hdr.len);
+    data->data = ntohl(data->data);
+    //float number = *((float *)&(data->data));
+
+    *p_data_out = *data;
+
+    return STATUS_SUCCESS;
+}
