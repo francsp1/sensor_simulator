@@ -3,8 +3,9 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "server_threads.h"
+
 #include "common.h"
-#include "threads.h"
 
 int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_socket, void *(*handle_client) (void *) ){
     printf("Initializing threads\n");

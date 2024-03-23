@@ -8,6 +8,7 @@
         "types.h": "c",
         "inet.h": "c",
         "socket.h": "c",
-        "threads.h": "c"
+        "threads.h": "c",
+        "server_threads.h": "c"
     }
 }

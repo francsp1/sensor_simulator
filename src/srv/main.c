@@ -13,8 +13,8 @@
 #include "common.h"
 #include "args.h"
 
-#include "socket.h"
-#include "threads.h"
+#include "server_socket.h"
+#include "server_threads.h"
 
 
 int main(int argc, char *argv[]) {

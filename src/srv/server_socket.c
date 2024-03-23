@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "socket.h"
+#include "server_socket.h"
 
 #include "common.h"
 
