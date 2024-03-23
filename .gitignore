@@ -1,2 +1,7 @@
-bin/*
-obj/*
+bin/server
+bin/client
+obj/*.o
+obj/cli/*.o
+obj/cli/args/*.o
+obj/srv/*.o
+obj/srv/args/*.o
