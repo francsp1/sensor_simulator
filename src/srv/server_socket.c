@@ -49,11 +49,3 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     
     return STATUS_SUCCESS;
 }
-
-int close_server_socket(int server_socket){
-    if (close(server_socket) == -1) {
-        fprintf(stderr, "Error closing socket\n");
-        return STATUS_ERROR;
-    }
-    return STATUS_SUCCESS;
-}

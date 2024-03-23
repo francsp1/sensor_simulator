@@ -19,8 +19,8 @@ all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $
 
 run: clean default
 	echo "-------- Running server --------"
-#./$(TARGET_SRV) --port 8080 
-	./$(TARGET_CLI) --ip 127.0.0.1 --port 8080 
+	./$(TARGET_SRV) --port 8080 
+#./$(TARGET_CLI) --ip 127.0.0.1 --port 8080 
 
 
 default: clean $(TARGET_SRV) $(TARGET_CLI)

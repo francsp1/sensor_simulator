@@ -41,9 +41,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    pthread_t *tids = NULL;
-    thread_params_t *thread_params = NULL;
-    if (init_threads(&tids, &thread_params, server_socket, handle_client) == STATUS_ERROR) {
+    pthread_t tids[NUMBER_OF_SENSORS];
+    memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
+    thread_params_t thread_params[NUMBER_OF_SENSORS];
+    memset(thread_params, 0, sizeof(thread_params_t) * NUMBER_OF_SENSORS);
+
+    if (init_threads(tids, thread_params, server_socket, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing threads\n");
         close_socket(server_socket);
         exit(EXIT_FAILURE);
@@ -57,12 +60,10 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     */
-   
+
     while(1){
         sleep(1);
     }
-
-    free_threads(&tids, &thread_params);
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
