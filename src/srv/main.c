@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t *tids = NULL;
     thread_params_t *thread_params = NULL;
-    if (init_threads(&tids, &thread_params, server_socket) == STATUS_ERROR) {
+    if (init_threads(&tids, &thread_params, server_socket, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing threads\n");
         exit(EXIT_FAILURE);
     }
@@ -85,6 +85,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void main_server(void) {
-    printf("Main server\n");
+void *handle_client(void *arg){
+
+    thread_params_t *params = (thread_params_t *) arg;
+
+    printf("Thread %d\n", params->id);
+
+    return NULL;
 }

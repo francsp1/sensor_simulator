@@ -6,7 +6,7 @@
 #include "common.h"
 #include "threads.h"
 
-int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_socket){
+int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_socket, void *(*handle_client) (void *) ){
     printf("Initializing threads\n");
 
     *tids = calloc(NUMBER_OF_SENSORS, sizeof(pthread_t)); 
@@ -42,11 +42,4 @@ int init_threads(pthread_t **tids, thread_params_t **thread_params, int server_s
     return STATUS_SUCCESS;
 }
 
-void *handle_client(void *arg){
 
-    thread_params_t *params = (thread_params_t *) arg;
-
-    printf("Thread %d\n", params->id);
-
-    return NULL;
-}
