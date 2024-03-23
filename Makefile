@@ -44,8 +44,10 @@ obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROG
 obj/srv/server_socket.o: src/srv/server_socket.c inc/srv/server_socket.h inc/common.h
 obj/srv/server_threads.o: src/srv/server_threads.c inc/srv/server_threads.h inc/common.h 
 # Client
-obj/cli/main.o: src/cli/main.c inc/cli/main.h inc/common.h inc/cli/args/$(PROGRAM_OPT).h 
+obj/cli/main.o: src/cli/main.c inc/cli/main.h inc/common.h inc/cli/args/$(PROGRAM_OPT).h inc/cli/client_socket.h inc/cli/client_threads.h
 obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h src/cli/args/$(PROGRAM_OPT).ggo
+obj/cli/client_socket.o: src/cli/client_socket.c inc/cli/client_socket.h inc/common.h
+obj/cli/client_threads.o: src/cli/client_threads.c inc/cli/client_threads.h inc/common.h
 # Common
 obj/common.o: src/common.c inc/common.h
 

@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(thread_params_t) * NUMBER_OF_SENSORS);
-
     if (init_threads(tids, thread_params, server_socket, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing threads\n");
         close_socket(server_socket);
