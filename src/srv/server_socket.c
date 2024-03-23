@@ -75,7 +75,6 @@ int deserialize_data(uint8_t *buffer, proto_send_data_t *p_data_out) {
     data->hdr.sensor_id = ntohl(data->hdr.sensor_id);
     data->hdr.len = ntohs(data->hdr.len);
     data->data = ntohl(data->data);
-    //float number = *((float *)&(data->data));
 
     *p_data_out = *data;
 

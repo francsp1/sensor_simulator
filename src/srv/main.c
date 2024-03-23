@@ -50,17 +50,6 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         exit(EXIT_FAILURE);
     }
-
-
-    /*
-    if (join_threads(tids) == STATUS_ERROR) {
-        fprintf(stderr, "Could not join all threads\n");
-        close_server_socket(server_socket);
-        free_threads(&tids, &thread_params);
-        exit(EXIT_FAILURE);
-    }
-    */
-
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
@@ -95,8 +84,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void *handle_client(void *arg){
-    
+void *handle_client(void *arg){ //TODO
+    //TODO
 
     thread_params_t *params = (thread_params_t *) arg;
     //printf("Thread %d is waiting\n", params->id);
@@ -107,12 +96,3 @@ void *handle_client(void *arg){
     }
     return NULL;
 }
-
-/*
-void *handle_client(void *arg){
-
-    
-
-    return NULL;
-}
-*/
