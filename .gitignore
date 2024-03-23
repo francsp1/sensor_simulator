@@ -5,3 +5,6 @@ obj/cli/*.o
 obj/cli/args/*.o
 obj/srv/*.o
 obj/srv/args/*.o
+
+inc/cli/args/*.h
+inc/srv/args/*.h
