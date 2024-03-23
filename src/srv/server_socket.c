@@ -7,7 +7,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread.h>
+#include <arpa/inet.h>
 
 #include "server_socket.h"
 
@@ -17,7 +17,7 @@ int init_server_socket(int server_port, int *p_server_socket_out){
 
     int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket == -1) {
-        fprintf(stderr, "Error creating socket\n");
+        fprintf(stderr, "Error creating server socket\n");
         return STATUS_ERROR;
     }
 
@@ -44,7 +44,9 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     }
 
     printf("Server listening for UDP messages on port %d\n", server_port);    
+    
     *p_server_socket_out = server_socket;
+    
     return STATUS_SUCCESS;
 }
 

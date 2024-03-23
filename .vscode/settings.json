@@ -9,6 +9,8 @@
         "inet.h": "c",
         "socket.h": "c",
         "threads.h": "c",
-        "server_threads.h": "c"
+        "server_threads.h": "c",
+        "server_socket.h": "c",
+        "client_socket.h": "c"
     }
 }

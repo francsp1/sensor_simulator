@@ -11,6 +11,7 @@
 
 int validate_port(int server_port);
 void disable_buffering(void);
+int close_socket(int server_socket);
 
 void common(void);
 

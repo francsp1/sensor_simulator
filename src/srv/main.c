@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     thread_params_t *thread_params = NULL;
     if (init_threads(&tids, &thread_params, server_socket, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing threads\n");
-        close_server_socket(server_socket);
+        close_socket(server_socket);
         exit(EXIT_FAILURE);
     }
 
@@ -57,13 +57,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     */
+   
     while(1){
         sleep(1);
     }
 
     free_threads(&tids, &thread_params);
 
-    if (close_server_socket(server_socket) == STATUS_ERROR) {
+    if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
         exit(EXIT_FAILURE);
     }

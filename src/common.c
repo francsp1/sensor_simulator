@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "common.h"
 
@@ -14,6 +15,14 @@ int validate_port(int server_port) {
 void disable_buffering(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
+}
+
+int close_socket(int server_socket){
+    if (close(server_socket) == -1) {
+        fprintf(stderr, "Error closing socket\n");
+        return STATUS_ERROR;
+    }
+    return STATUS_SUCCESS;
 }
 
 void common(void){
