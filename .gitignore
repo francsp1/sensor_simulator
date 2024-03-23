@@ -6,8 +6,8 @@ obj/cli/args/*.o
 obj/srv/*.o
 obj/srv/args/*.o
 
-inc/cli/args/*.h
-inc/srv/args/*.h
+inc/cli/args/args.h
+inc/srv/args/args.h
 
 src/cli/args/args.c
 src/srv/args/args.c
