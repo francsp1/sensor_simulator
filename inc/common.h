@@ -29,8 +29,7 @@ typedef struct {
 int validate_port(int server_port);
 void disable_buffering(void);
 int close_socket(int server_socket);
-float get_float_value(proto_send_data_t data);
-
+float get_float_value(proto_send_data_t *data);
 
 void common(void);
 

@@ -14,6 +14,7 @@
 #include "args.h"
 
 #include "client_socket.h"
+#include "client_threads.h"
 
 
 int main(int argc, char *argv[]) {
@@ -35,28 +36,38 @@ int main(int argc, char *argv[]) {
     
     int client_socket = -1;
     socklen_t server_endpoint_length = sizeof(struct sockaddr_in);	
-    struct sockaddr_in server_endpoint = {0};
-    if(init_client_socket(args.ip_arg, server_port, &client_socket, &server_endpoint) == STATUS_ERROR){
+    struct sockaddr_in server_endpoint;
+    memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
+    if (init_client_socket(args.ip_arg, server_port, &client_socket, &server_endpoint) == STATUS_ERROR) {
         fprintf(stderr, "Error initializing socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    pthread_t tids[NUMBER_OF_SENSORS];
+    memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
+    client_thread_params_t thread_params[NUMBER_OF_SENSORS];
+    memset(thread_params, 0, sizeof(client_thread_params_t) * NUMBER_OF_SENSORS);
+    if (init_client_threads(tids, thread_params, client_socket, handle_server) == STATUS_ERROR) {
+        fprintf(stderr, "Could not initialize all threads\n");
+        close_socket(client_socket);
         exit(EXIT_FAILURE);
     }
 
     proto_send_data_t data;
     memset(&data, 0, sizeof(proto_send_data_t));
+    serialize_data(&data);
 
-    data.hdr.type = htonl(PROTO_SEND_DATA);
-    data.hdr.sensor_id = htonl(1);
-    data.hdr.len = htons(sizeof(float));
-    float number = 3.1415f;
-    data.data = htonl( *((uint32_t*) &number));
+    /*
+    printf("Debug data\n");
+    printf("data.hdr.type: %d\n", ntohl(data.hdr.type));
+    printf("data.hdr.sensor_id: %d\n", ntohl(data.hdr.sensor_id));
+    printf("data.hdr.len: %d\n", ntohs(data.hdr.len));
+    */
 
-    ssize_t sent_bytes;
-    printf("a enviar dados para o servidor... ");
-	if ((sent_bytes = sendto(client_socket, &data, sizeof(proto_send_data_t), 0, (struct sockaddr *) &server_endpoint, server_endpoint_length)) == -1) {
-        fprintf(stderr, "Error sending data to server\n");
+    if (send_to_socket(client_socket, &data, server_endpoint, server_endpoint_length) == STATUS_ERROR) {
+        fprintf(stderr, "Could not send data to server\n");
         exit(EXIT_FAILURE);
     }
-	printf("ok.  (%ld bytes sent)\n", sent_bytes);
 
     if (close_socket(client_socket) == STATUS_ERROR) {
         fprintf(stderr, "Error closing socket\n");
@@ -68,6 +79,15 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void main_client(void){
-    printf("Main client\n");
+void *handle_server(void *arg){ //TODO
+    //TODO
+
+    client_thread_params_t *params = (client_thread_params_t *) arg;
+    //printf("Thread %d is waiting\n", params->id);
+    (void)params;
+
+    while(1){
+        sleep(1);
+    }
+    return NULL;
 }

@@ -11,7 +11,6 @@
 #include <sys/time.h>
 
 #include "client_socket.h"
-
 #include "common.h"
 
 int init_client_socket(const char *ip, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out) {
@@ -54,6 +53,36 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
     *p_client_socket_out = client_socket;
 
     memcpy(p_server_endpoint_out, &server_endpoint, sizeof(struct sockaddr_in));
+
+    return STATUS_SUCCESS;
+}
+
+int serialize_data(proto_send_data_t *p_data_out){
+
+    proto_send_data_t data;
+    memset(&data, 0, sizeof(proto_send_data_t));
+
+    data.hdr.type = htonl(PROTO_SEND_DATA);
+    data.hdr.sensor_id = htonl(1);
+    data.hdr.len = htons(sizeof(float));
+    float number = 3.1415f;
+    data.data = htonl( *((uint32_t*) &number));
+
+    memcpy(p_data_out, &data, sizeof(proto_send_data_t));
+
+    return STATUS_SUCCESS;
+
+}
+
+int send_to_socket(int client_socket, proto_send_data_t *data, struct sockaddr_in server_endpoint, socklen_t server_endpoint_length) {
+
+    ssize_t sent_bytes;
+    printf("Sending data to server...");
+	if ((sent_bytes = sendto(client_socket, data, sizeof(proto_send_data_t), 0, (struct sockaddr *) &server_endpoint, server_endpoint_length)) == -1) {
+        fprintf(stderr, "Error sending data to server\n");
+        exit(EXIT_FAILURE);
+    }
+	printf("ok.  (%ld bytes sent)\n", sent_bytes);
 
     return STATUS_SUCCESS;
 }

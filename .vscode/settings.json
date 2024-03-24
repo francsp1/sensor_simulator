@@ -12,6 +12,10 @@
         "server_threads.h": "c",
         "server_socket.h": "c",
         "client_socket.h": "c",
-        "queue_thread_safe.h": "c"
+        "queue_thread_safe.h": "c",
+        "unistd.h": "c",
+        "server_queues.h": "c",
+        "unordered_circular_doubly_list_with_base.h": "c",
+        "client_threads.h": "c"
     }
 }

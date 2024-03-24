@@ -1,6 +1,6 @@
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _MAIN_CLI_H_
+#define _MAIN_CLI_H_
 
-void main_client(void);
+void *handle_server(void *arg);
 
-#endif // _MAIN_H_
+#endif // _MAIN_CLI_H_

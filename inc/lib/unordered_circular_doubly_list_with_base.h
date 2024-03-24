@@ -7,7 +7,11 @@
 
 #include "doubly_node.h"
 
-typedef struct ucdlwb unordered_circular_doubly_list_with_base_t;
+typedef struct ucdlwb {
+    doubly_node_t *base_node;
+    uint32_t number_of_elements;
+    bool (*are_equal)(void *variable1, void *variable2);
+} unordered_circular_doubly_list_with_base_t;
 
 unordered_circular_doubly_list_with_base_t *ucdlwb_create(bool (*are_equal)(void *variable1, void *variable2));
 

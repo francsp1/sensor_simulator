@@ -15,21 +15,18 @@
 
 #include "server_socket.h"
 #include "server_threads.h"
+#include "server_queues.h"
 
-#include "../../inc/lib/queue_thread_safe.h"
 #include "queue_thread_safe.h"
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
     // Disable buffering for stdout and stderr
-
-    queue_thread_safe_t *queue = queue_create_thread_safe();
-
     disable_buffering();
     
 	struct gengetopt_args_info args;
-	if (cmdline_parser(argc, argv, &args)){
+	if (cmdline_parser(argc, argv, &args)) {
         perror("Command line parser error\n");
         exit(EXIT_FAILURE);
 	}
@@ -46,13 +43,22 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    queue_thread_safe_t *queues[NUMBER_OF_SENSORS];
+    memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
+    if (create_queues(queues) == STATUS_ERROR) {
+        fprintf(stderr, "Could not create all necessary queues\n");
+        close_socket(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
     pthread_t tids[NUMBER_OF_SENSORS];
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
-    thread_params_t thread_params[NUMBER_OF_SENSORS];
-    memset(thread_params, 0, sizeof(thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_threads(tids, thread_params, server_socket, handle_client) == STATUS_ERROR) {
+    server_thread_params_t thread_params[NUMBER_OF_SENSORS];
+    memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
+    if (init_server_threads(tids, thread_params, server_socket, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(server_socket);
+        destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
     
@@ -66,17 +72,29 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        proto_send_data_t data;
-        memset(&data, 0, sizeof(proto_send_data_t));
-        deserialize_data(buffer, &data);
+        proto_send_data_t *data = calloc(1, sizeof(proto_send_data_t)); // The corresponding thread will free this memory
+        if (data == NULL) {
+            fprintf(stderr, "Could not allocate memory to store data\n");
+            continue;
+        }
 
-        if (data.hdr.type != PROTO_SEND_DATA) {
+        deserialize_data(buffer, data);
+
+        if (data->hdr.type != PROTO_SEND_DATA) {
             fprintf(stderr, "Invalid message type\n");
             continue;
         }
 
-        printf("Sensor with the ID %d sent the value %f\n", data.hdr.sensor_id, get_float_value(data) );
+        if (data->hdr.sensor_id >= NUMBER_OF_SENSORS) {
+            fprintf(stderr, "Invalid sensor ID\n");
+            continue;
+        }
 
+        printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
+
+        queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
+
+        print_queue(queues[data->hdr.sensor_id]);
     }
 
     if (close_socket(server_socket) == STATUS_ERROR) {
@@ -84,6 +102,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    destroy_queues(queues);
 
 	cmdline_parser_free(&args);
     return 0;
@@ -92,7 +111,7 @@ int main(int argc, char *argv[]) {
 void *handle_client(void *arg){ //TODO
     //TODO
 
-    thread_params_t *params = (thread_params_t *) arg;
+    server_thread_params_t *params = (server_thread_params_t *) arg;
     //printf("Thread %d is waiting\n", params->id);
     (void)params;
 

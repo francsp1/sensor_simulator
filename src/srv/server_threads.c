@@ -2,19 +2,19 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
-
 #include <stdint.h>
 
 #include "server_threads.h"
 
 #include "common.h"
 
-int init_threads(pthread_t *tids, thread_params_t *thread_params, int server_socket, void *(*handle_client) (void *) ){
+int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, queue_thread_safe_t **queues, void *(*handle_client) (void *)) {
     printf("Initializing threads\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        thread_params[i].id = i + 1;
+        thread_params[i].id = i;
         thread_params[i].server_socket = server_socket;
+        thread_params[i].queue = queues[i];
     }
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){

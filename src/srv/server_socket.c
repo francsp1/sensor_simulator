@@ -62,7 +62,7 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
         fprintf(stderr, "Error receiving data from client\n");
         return STATUS_ERROR;
     }
-    //printf("Thread %d received %ld bytes from %s:%d - %s\n", params->id, read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port), buffer);
+
     printf("Received %ld bytes from %s:%d\n", read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
 
     return STATUS_SUCCESS;
