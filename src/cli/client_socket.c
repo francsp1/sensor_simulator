@@ -57,28 +57,22 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
     return STATUS_SUCCESS;
 }
 
-int serialize_data(proto_send_data_t *p_data_out){
+int serialize_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id){
 
-    proto_send_data_t data;
-    memset(&data, 0, sizeof(proto_send_data_t));
-
-    data.hdr.type = htonl(PROTO_SEND_DATA);
-    data.hdr.sensor_id = htonl(1);
-    data.hdr.len = htons(sizeof(float));
+    data->hdr.type = htonl(PROTO_SENSOR_DATA);
+    data->hdr.sensor_id = htonl(sensor_id);
+    data->hdr.len = htons(sizeof(float));
     float number = 3.1415f;
-    data.data = htonl( *((uint32_t*) &number));
-
-    memcpy(p_data_out, &data, sizeof(proto_send_data_t));
-
+    data->data = htonl( *((uint32_t*) &number));
+    
     return STATUS_SUCCESS;
-
 }
 
-int send_to_socket(int client_socket, proto_send_data_t *data, struct sockaddr_in server_endpoint, socklen_t server_endpoint_length) {
+int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint) {
 
     ssize_t sent_bytes;
     printf("Sending data to server...");
-	if ((sent_bytes = sendto(client_socket, data, sizeof(proto_send_data_t), 0, (struct sockaddr *) &server_endpoint, server_endpoint_length)) == -1) {
+	if ((sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in))) == -1) {
         fprintf(stderr, "Error sending data to server\n");
         exit(EXIT_FAILURE);
     }

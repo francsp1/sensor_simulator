@@ -64,7 +64,8 @@ int main(int argc, char *argv[]) {
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
-    while(1){
+    while(1){ //Using the printf/fprintf to write too stdout/stderr is too slow and can cause packet loss 
+
         memset(buffer,0,sizeof(buffer));
 
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
@@ -72,15 +73,15 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        proto_send_data_t *data = calloc(1, sizeof(proto_send_data_t)); // The corresponding thread will free this memory
+        proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t)); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store data\n");
             continue;
         }
 
-        deserialize_data(buffer, data);
+        deserialize_sensor_data(buffer, data);
 
-        if (data->hdr.type != PROTO_SEND_DATA) {
+        if (data->hdr.type != PROTO_SENSOR_DATA) {
             fprintf(stderr, "Invalid message type\n");
             continue;
         }
@@ -90,11 +91,14 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
+        //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
 
-        print_queue(queues[data->hdr.sensor_id]);
+        //print_queue(queues[data->hdr.sensor_id]);
+
+        printf("Q0: %d\n", queue_get_number_of_elements_thread_safe(queues[0]));
+        printf("Q1: %d\n", queue_get_number_of_elements_thread_safe(queues[1]));
     }
 
     if (close_socket(server_socket) == STATUS_ERROR) {

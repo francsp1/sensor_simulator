@@ -6,13 +6,16 @@
 #define STATUS_ERROR   ( (int) (-1) )
 #define STATUS_SUCCESS ( (int) (0)  )
 
-#define MAX_PENDING_CONECTIONS (256)
+#define MAX_PENDING_CONECTIONS (2048)
 #define MAX_BUFFER_SIZE (1024)
 
 #define NUMBER_OF_SENSORS ( (uint32_t) (2) )
 
+#define SENSOR_RATE 10 // Define the desired frequency in Hz
+#define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
+
 typedef enum {
-	PROTO_SEND_DATA,
+	PROTO_SENSOR_DATA,
 } proto_type_e;
 
 typedef struct {
@@ -24,12 +27,12 @@ typedef struct {
 typedef struct {
     proto_hdr_t hdr;
     uint32_t data;
-} proto_send_data_t;
+} proto_sensor_data_t;
 
 int validate_port(int server_port);
 void disable_buffering(void);
 int close_socket(int server_socket);
-float get_float_value(proto_send_data_t *data);
+float get_float_value(proto_sensor_data_t *data);
 
 void common(void);
 

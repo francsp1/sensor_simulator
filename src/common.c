@@ -25,7 +25,7 @@ int close_socket(int server_socket){
     return STATUS_SUCCESS;
 }
 
-float get_float_value(proto_send_data_t *data){
+float get_float_value(proto_sensor_data_t *data){
     return *((float *)&(data->data));
 }
 

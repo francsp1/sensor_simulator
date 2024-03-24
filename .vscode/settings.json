@@ -16,6 +16,9 @@
         "unistd.h": "c",
         "server_queues.h": "c",
         "unordered_circular_doubly_list_with_base.h": "c",
-        "client_threads.h": "c"
+        "client_threads.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     }
 }
