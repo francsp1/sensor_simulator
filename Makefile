@@ -19,7 +19,7 @@ all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $
 
 run: clean default
 	echo "-------- Running server --------"
-	./$(TARGET_SRV) --port 8080 
+	LD_LIBRARY_PATH=./src/lib ./$(TARGET_SRV) --port 8080 
 #./$(TARGET_CLI) --ip 127.0.0.1 --port 8080 
 
 
@@ -73,11 +73,11 @@ obj/common.o: src/common.c inc/common.h
 
 # Compile Server
 $(TARGET_SRV): $(OBJ_SRV) 
-	gcc -o $@ $^
+	gcc -o $@ $^ -Lsrc/lib -lqueue
 
 # Generate .o files from every .c file in src/srv
 $(OBJ_S): obj/srv/%.o: src/srv/%.c
-	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/srv -Iinc/srv/args
+	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/lib -Iinc/srv -Iinc/srv/args 
 
 # Compile Client
 $(TARGET_CLI): $(OBJ_CLI) 
@@ -85,4 +85,4 @@ $(TARGET_CLI): $(OBJ_CLI)
 
 # Generate .o files from every .c file in src/cli
 $(OBJ_C): obj/cli/%.o: src/cli/%.c
-	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/cli -Iinc/cli/args
+	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/lib -Iinc/cli -Iinc/cli/args

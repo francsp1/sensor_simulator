@@ -16,11 +16,16 @@
 #include "server_socket.h"
 #include "server_threads.h"
 
+#include "../../inc/lib/queue_thread_safe.h"
+#include "queue_thread_safe.h"
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
     // Disable buffering for stdout and stderr
+
+    queue_thread_safe_t *queue = queue_create_thread_safe();
+
     disable_buffering();
     
 	struct gengetopt_args_info args;
