@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #include "server_socket.h"
 
@@ -59,6 +60,9 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
     //printf("Waiting for a client message...\n");
 
     if ((read_bytes = recvfrom(server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
+        if (errno == EINTR) { // Interrupted by a signal (SIGTERM in this case)
+            return STATUS_SUCCESS;
+        }
         fprintf(stderr, "Error receiving data from client\n");
         return STATUS_ERROR;
     }

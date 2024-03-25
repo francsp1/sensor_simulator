@@ -30,7 +30,7 @@ volatile bool term_flag = true;
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
-    printf("Llllllllllllllllllllllllllllllllllllllll\n");
+    printf("Llllllllllllllllllllllllllllllllllllllll4444\n\n");
     // Disable buffering for stdout and stderr
     disable_buffering();
     
@@ -80,7 +80,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    /*
     struct sigaction sa;
     sa.sa_handler = sigterm_handler;
     sigemptyset(&sa.sa_mask);
@@ -93,7 +92,7 @@ int main(int argc, char *argv[]) {
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
-    */
+    
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
@@ -140,6 +139,14 @@ int main(int argc, char *argv[]) {
 
     }
 
+    if (join_server_threads(tids) == STATUS_ERROR) {
+        fprintf(stderr, "Could not join all threads\n");
+        close_socket(server_socket);
+        close_server_logs_file(&server_logs_file);
+        //destroy_queues(queues);
+        exit(EXIT_FAILURE);
+    }
+
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
         exit(EXIT_FAILURE);
@@ -150,9 +157,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    destroy_queues(queues);
+    //destroy_queues(queues);
 
 	cmdline_parser_free(&args);
+
+    printf("Terminating server\n");
+    
     return 0;
 }
 
@@ -171,7 +181,8 @@ void *handle_client(void *arg){ //TODO
 
     int count = 0;
 
-    while(term_flag){
+    while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
+
         data = queue_remove_thread_safe(queue);
         if (data == NULL) {
             //printf("No data in the queue %d\n", id);
@@ -195,7 +206,6 @@ void *handle_client(void *arg){ //TODO
     return NULL;
 }
 
-/*
 void sigterm_handler(int signum) {
     int aux;	
 	aux = errno;   
@@ -206,4 +216,3 @@ void sigterm_handler(int signum) {
 	
 	errno = aux;   
 }
-*/

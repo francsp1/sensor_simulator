@@ -22,6 +22,8 @@
         "string_view": "c",
         "cstdio": "c",
         "server_logs.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "stdbool.h": "c",
+        "pthread.h": "c"
     }
 }
