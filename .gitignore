@@ -14,3 +14,5 @@ src/srv/args/args.c
 
 server_logs.txt
 client_logs.txt
+
+.vscode
