@@ -97,8 +97,11 @@ int main(int argc, char *argv[]) {
 
         //print_queue(queues[data->hdr.sensor_id]);
 
-        printf("Q0: %d\n", queue_get_number_of_elements_thread_safe(queues[0]));
-        printf("Q1: %d\n", queue_get_number_of_elements_thread_safe(queues[1]));
+        /*
+        for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+            printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
+        }
+        */
     }
 
     if (close_socket(server_socket) == STATUS_ERROR) {
@@ -117,10 +120,28 @@ void *handle_client(void *arg){ //TODO
 
     server_thread_params_t *params = (server_thread_params_t *) arg;
     //printf("Thread %d is waiting\n", params->id);
-    (void)params;
+
+    //int server_socket = params->server_socket;
+    uint32_t id = params->id;
+    queue_thread_safe_t *queue = params->queue;
+
+    proto_sensor_data_t *data = NULL;
+
+    int count = 0;
 
     while(1){
-        sleep(1);
+        data = queue_remove_thread_safe(queue);
+        if (data == NULL) {
+            //printf("No data in the queue %d\n", id);
+            continue;
+        }
+
+        count++;
+        //printf("Element removed from the queue %d (Count: %d)\n", id, count);
+        printf("q %d C: %d\n", id, count);
+
+
+        free(data);
     }
     return NULL;
 }

@@ -74,13 +74,15 @@ void *handle_server(void *arg){ //TODO
     uint32_t id = params->id;
     int client_socket = params->client_socket;
 
-    struct timespec delay;
+    struct timespec delay = {0};
     delay.tv_sec = 0;
     delay.tv_nsec = DELAY_MS * 1000000; // Convert milliseconds to nanoseconds
 
     proto_sensor_data_t data;
+
+    int aux = 500;
     
-    while (1) {
+    while (aux) {
         memset(&data, 0, sizeof(proto_sensor_data_t));
         serialize_sensor_data(&data, id);
 
@@ -90,7 +92,11 @@ void *handle_server(void *arg){ //TODO
         }
 
         nanosleep(&delay, NULL);
+
+        aux--;
     }
+
+    printf("Thread %d finished\n", id);
   
     return NULL;
 }    
