@@ -19,6 +19,8 @@
         "client_threads.h": "c",
         "array": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "cstdio": "c",
+        "server_logs.h": "c"
     }
 }

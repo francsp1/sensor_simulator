@@ -39,11 +39,12 @@ clean:
 
 # Dependencies
 # Server
-obj/srv/main.o: src/srv/main.c inc/srv/main.h inc/common.h inc/srv/args/$(PROGRAM_OPT).h inc/srv/server_socket.h inc/srv/server_threads.h inc/srv/server_queues.h
+obj/srv/main.o: src/srv/main.c inc/srv/main.h inc/common.h inc/srv/args/$(PROGRAM_OPT).h inc/srv/server_socket.h inc/srv/server_threads.h inc/srv/server_queues.h inc/srv/server_logs.h
 obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h src/srv/args/$(PROGRAM_OPT).ggo
-obj/srv/server_socket.o: src/srv/server_socket.c inc/srv/server_socket.h inc/common.h
+obj/srv/server_socket.o:  src/srv/server_socket.c  inc/srv/server_socket.h  inc/common.h
 obj/srv/server_threads.o: src/srv/server_threads.c inc/srv/server_threads.h inc/common.h 
-obj/srv/server_queues.o: src/srv/server_queues.c inc/srv/server_queues.h inc/common.h
+obj/srv/server_queues.o:  src/srv/server_queues.c  inc/srv/server_queues.h  inc/common.h
+obj/srv/server_logs.o:    src/srv/server_logs.c    inc/srv/server_logs.h    inc/common.h
 # Client
 obj/cli/main.o: src/cli/main.c inc/cli/main.h inc/common.h inc/cli/args/$(PROGRAM_OPT).h inc/cli/client_socket.h inc/cli/client_threads.h
 obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h src/cli/args/$(PROGRAM_OPT).ggo

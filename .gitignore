@@ -11,3 +11,6 @@ inc/srv/args/args.h
 
 src/cli/args/args.c
 src/srv/args/args.c
+
+server_logs.txt
+client_logs.txt

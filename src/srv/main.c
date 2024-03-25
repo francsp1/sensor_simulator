@@ -16,6 +16,7 @@
 #include "server_socket.h"
 #include "server_threads.h"
 #include "server_queues.h"
+#include "server_logs.h"
 
 #include "queue_thread_safe.h"
 
@@ -39,7 +40,14 @@ int main(int argc, char *argv[]) {
 
     int server_socket = -1;
     if (init_server_socket(server_port, &server_socket) == STATUS_ERROR) {
-        fprintf(stderr, "Error initializing socket\n");
+        fprintf(stderr, "Could not initialize the socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    logs_file_t server_logs_file;
+    if (open_server_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
+        fprintf(stderr, "Could not open the server logs file\n");
+        close_socket(server_socket);
         exit(EXIT_FAILURE);
     }
 
@@ -48,6 +56,7 @@ int main(int argc, char *argv[]) {
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
         close_socket(server_socket);
+        close_server_logs_file(&server_logs_file);
         exit(EXIT_FAILURE);
     }
 
@@ -55,16 +64,19 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, queues, handle_client) == STATUS_ERROR) {
+    if (init_server_threads(tids, thread_params, server_socket, &server_logs_file, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(server_socket);
+        close_server_logs_file(&server_logs_file);
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
-    while(1){ //Using the printf/fprintf to write too stdout/stderr is too slow and can cause packet loss 
+    //queue_thread_safe_t *queue_zero = queues[0];
+
+    while(1){ //Using the printf/fprintf to write to stdout/stderr is too slow 
 
         memset(buffer,0,sizeof(buffer));
 
@@ -102,10 +114,16 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
+
     }
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (close_server_logs_file(&server_logs_file) == STATUS_ERROR) {
+        fprintf(stderr, "Could not close the server logs file\n");
         exit(EXIT_FAILURE);
     }
 
@@ -124,10 +142,11 @@ void *handle_client(void *arg){ //TODO
     //int server_socket = params->server_socket;
     uint32_t id = params->id;
     queue_thread_safe_t *queue = params->queue;
+    logs_file_t *server_logs_file = params->server_logs_file;
 
     proto_sensor_data_t *data = NULL;
 
-    int count = 0;
+    //int count = 0;
 
     while(1){
         data = queue_remove_thread_safe(queue);
@@ -136,10 +155,17 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
 
-        count++;
+        //count++;
         //printf("Element removed from the queue %d (Count: %d)\n", id, count);
-        printf("q %d C: %d\n", id, count);
+        //printf("q %d C: %d\n", id, count);
 
+        if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
+            fprintf(stderr, "Could not log sensor data\n");
+            free(data);
+            continue;
+        }
+
+        //sleep(2);
 
         free(data);
     }
