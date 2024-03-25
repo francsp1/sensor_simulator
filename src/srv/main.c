@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
+#include <errno.h>
+#include <stdbool.h>
 
 #include "../inc/srv/main.h"
 #include "common.h"
@@ -20,9 +23,14 @@
 
 #include "queue_thread_safe.h"
 
+//volative sig_atomic_t term_flag = true;
+
+volatile bool term_flag = true;
+
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
+    printf("Llllllllllllllllllllllllllllllllllllllll\n");
     // Disable buffering for stdout and stderr
     disable_buffering();
     
@@ -71,12 +79,27 @@ int main(int argc, char *argv[]) {
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
+
+    /*
+    struct sigaction sa;
+    sa.sa_handler = sigterm_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    //sa.sa_flags |= SA_RESTART;
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        fprintf(stderr, "Could not initialize signal handler\n");
+        close_socket(server_socket);
+        close_server_logs_file(&server_logs_file);
+        destroy_queues(queues);
+        exit(EXIT_FAILURE);
+    }
+    */
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
     //queue_thread_safe_t *queue_zero = queues[0];
 
-    while(1){ //Using the printf/fprintf to write to stdout/stderr is too slow 
+    while(term_flag){ //Using the printf/fprintf to write to stdout/stderr is too slow 
 
         memset(buffer,0,sizeof(buffer));
 
@@ -87,7 +110,7 @@ int main(int argc, char *argv[]) {
 
         proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t)); // The corresponding thread will free this memory
         if (data == NULL) {
-            fprintf(stderr, "Could not allocate memory to store data\n");
+            fprintf(stderr, "Could not allocate memory to store sensor data\n");
             continue;
         }
 
@@ -146,16 +169,16 @@ void *handle_client(void *arg){ //TODO
 
     proto_sensor_data_t *data = NULL;
 
-    //int count = 0;
+    int count = 0;
 
-    while(1){
+    while(term_flag){
         data = queue_remove_thread_safe(queue);
         if (data == NULL) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
 
-        //count++;
+        count++;
         //printf("Element removed from the queue %d (Count: %d)\n", id, count);
         //printf("q %d C: %d\n", id, count);
 
@@ -171,3 +194,16 @@ void *handle_client(void *arg){ //TODO
     }
     return NULL;
 }
+
+/*
+void sigterm_handler(int signum) {
+    int aux;	
+	aux = errno;   
+	
+	// código
+	printf("SIGTERM Received (%d)\n", signum);	
+    term_flag = false;	
+	
+	errno = aux;   
+}
+*/
