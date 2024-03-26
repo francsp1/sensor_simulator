@@ -14,6 +14,8 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         thread_params[i].id = i;
         thread_params[i].server_socket = server_socket;
+        thread_params[i].counter = 0;
+        thread_params[i].sum = 0;
         thread_params[i].queue = queues[i];
         thread_params[i].server_logs_file = server_logs_file;
     }
@@ -30,7 +32,7 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
 }
 
 int join_server_threads(pthread_t *tids){
-    printf("Joining threads\n");
+    //printf("Joining threads\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         if (pthread_join(tids[i], NULL) != 0){
@@ -39,6 +41,6 @@ int join_server_threads(pthread_t *tids){
         }
     }
 
-    printf("Threads joined\n");
+    //printf("Threads joined\n");
     return STATUS_SUCCESS;
 }

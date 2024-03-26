@@ -27,14 +27,14 @@ int create_queues(queue_thread_safe_t **queues){
 }
 
 int destroy_queues(queue_thread_safe_t **queues){
-    printf("Destroying queues\n");
+    //printf("Destroying queues\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        printf("Destroying queue %d\n", i);
+        //printf("Destroying queue %d\n", i);
         queue_destroy_thread_safe(queues[i]);
     }
 
-    printf("Queues destroyed\n");
+    //printf("Queues destroyed\n");
 
     return STATUS_SUCCESS;
 }

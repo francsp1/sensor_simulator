@@ -11,6 +11,8 @@
 typedef struct server_thread_params {
 	uint32_t id;
     int server_socket;
+    uint32_t counter;
+    float sum;
     queue_thread_safe_t * queue;
     logs_file_t *server_logs_file;
 }server_thread_params_t;

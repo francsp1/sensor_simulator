@@ -23,14 +23,13 @@
 
 #include "queue_thread_safe.h"
 
-//volative sig_atomic_t term_flag = true;
+volatile sig_atomic_t term_flag = 1;
+pthread_mutex_t term_flag_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-volatile bool term_flag = true;
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
-    printf("Llllllllllllllllllllllllllllllllllllllll4444\n\n");
     // Disable buffering for stdout and stderr
     disable_buffering();
     
@@ -68,6 +67,11 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    //print all queues addresses for debugging
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+        printf("Queue %d: %p\n", i, (void *)queues[i]);
+    }
+
     pthread_t tids[NUMBER_OF_SENSORS];
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS];
@@ -80,25 +84,34 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction sa;
-    sa.sa_handler = sigterm_handler;
+    /*
+    struct sigaction sa; 
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = signal_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
-    //sa.sa_flags |= SA_RESTART;
+    sa.sa_flags |= SA_RESTART;
     if (sigaction(SIGTERM, &sa, NULL) == -1) {
-        fprintf(stderr, "Could not initialize signal handler\n");
+        fprintf(stderr, "Could not initialize signal handler (SIGTERM)\n");
         close_socket(server_socket);
         close_server_logs_file(&server_logs_file);
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
-    
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        fprintf(stderr, "Could not initialize signal handler (SIGINT)\n");
+        close_socket(server_socket);
+        close_server_logs_file(&server_logs_file);
+        destroy_queues(queues);
+        exit(EXIT_FAILURE);
+    }
+    */
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
     //queue_thread_safe_t *queue_zero = queues[0];
 
-    while(term_flag){ //Using the printf/fprintf to write to stdout/stderr is too slow 
+    while (1) { //Using the printf/fprintf to write to stdout/stderr is too slow 
 
         memset(buffer,0,sizeof(buffer));
 
@@ -125,7 +138,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
+        printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
 
@@ -136,14 +149,13 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
-
     }
 
     if (join_server_threads(tids) == STATUS_ERROR) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(server_socket);
         close_server_logs_file(&server_logs_file);
-        //destroy_queues(queues);
+        destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
 
@@ -157,7 +169,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //destroy_queues(queues);
+    destroy_queues(queues);
 
 	cmdline_parser_free(&args);
 
@@ -181,38 +193,58 @@ void *handle_client(void *arg){ //TODO
 
     int count = 0;
 
-    while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
+    while (1) {
 
-        data = queue_remove_thread_safe(queue);
-        if (data == NULL) {
+        if (queue_get_number_of_elements_thread_safe(queue) == 0) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
 
+        data = queue_remove_thread_safe(queue);
+        if (data == NULL ) {
+            //printf("No data in the queue %d\n", id);
+            continue;
+        }
+
+        print_queue(queue);
+
+        printf("\nterm_flag 4: %d\n", term_flag);
         count++;
-        //printf("Element removed from the queue %d (Count: %d)\n", id, count);
+        printf("Element removed from the queue %d (Count: %d)\n", id, count);
         //printf("q %d C: %d\n", id, count);
+
+
+        //print all data contents for debugging
+        printf("data: %p\n", (void *)data);
+        printf("data->hdr.type: %d\n", data->hdr.type);
+        printf("data->hdr.sensor_id: %d\n", data->hdr.sensor_id);
+        printf("data->hdr.len: %d\n", data->hdr.len);
+        printf("data->data: %f\n", get_float_value(data));
 
         if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
             fprintf(stderr, "Could not log sensor data\n");
             free(data);
             continue;
         }
-
+        
         //sleep(2);
 
-        free(data);
+        free(data);  
+        data = NULL;      
     }
+
     return NULL;
 }
 
-void sigterm_handler(int signum) {
+void signal_handler(int signum) {
     int aux;	
 	aux = errno;   
 	
-	// código
-	printf("SIGTERM Received (%d)\n", signum);	
-    term_flag = false;	
+	printf("\nSignal Received (%d)\n", signum);	
+
+    pthread_mutex_lock(&term_flag_mutex);
+    term_flag = 0;	
+    pthread_mutex_unlock(&term_flag_mutex);
 	
 	errno = aux;   
 }
