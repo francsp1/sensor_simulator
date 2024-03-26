@@ -42,6 +42,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    logs_file_t client_logs_file;
+    memset(&client_logs_file, 0, sizeof(logs_file_t));
+    if (open_logs_file(&client_logs_file, CLIENT_LOGS_FILE) == STATUS_ERROR) {
+        fprintf(stderr, "Could not open the server logs file\n");
+        close_socket(client_socket);
+        exit(EXIT_FAILURE);
+    }
+
     pthread_t tids[NUMBER_OF_SENSORS];
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     client_thread_params_t thread_params[NUMBER_OF_SENSORS];
@@ -49,15 +57,24 @@ int main(int argc, char *argv[]) {
     if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, handle_server) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(client_socket);
+        close_logs_file(&client_logs_file);
         exit(EXIT_FAILURE);
     }
 
-    while (1) {
-        sleep(999);
+    if (join_threads(tids) == STATUS_ERROR) {
+        fprintf(stderr, "Could not join all threads\n");
+        close_socket(client_socket);
+        close_logs_file(&client_logs_file);
+        exit(EXIT_FAILURE);
     }
 
     if (close_socket(client_socket) == STATUS_ERROR) {
         fprintf(stderr, "Error closing socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (close_logs_file(&client_logs_file) == STATUS_ERROR) {
+        fprintf(stderr, "Error closing logs file\n");
         exit(EXIT_FAILURE);
     }
 
@@ -80,7 +97,7 @@ void *handle_server(void *arg){ //TODO
 
     proto_sensor_data_t data;
 
-    int aux = 500;
+    int aux = 50;
     
     while (aux) {
         memset(&data, 0, sizeof(proto_sensor_data_t));

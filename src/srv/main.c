@@ -26,18 +26,26 @@
 volatile sig_atomic_t term_flag = 1;
 pthread_mutex_t term_flag_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
     // Disable buffering for stdout and stderr
     disable_buffering();
-    
+
 	struct gengetopt_args_info args;
 	if (cmdline_parser(argc, argv, &args)) {
         perror("Command line parser error\n");
         exit(EXIT_FAILURE);
 	}
+
+    char *time = NULL;
+    if (get_current_time(&time) == STATUS_ERROR) {
+        fprintf(stderr, "Could not get current time\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("Server started at %s\n", time);
+    free(time);
+    
 
     int server_port = args.port_arg;   
     if (validate_port(server_port) == STATUS_ERROR) {
@@ -60,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     logs_file_t server_logs_file;
     memset(&server_logs_file, 0, sizeof(logs_file_t));
-    if (open_server_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
+    if (open_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
         fprintf(stderr, "Could not open the server logs file\n");
         close_socket(server_socket);
         exit(EXIT_FAILURE);
@@ -71,7 +79,7 @@ int main(int argc, char *argv[]) {
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
         close_socket(server_socket);
-        close_server_logs_file(&server_logs_file);
+        close_logs_file(&server_logs_file);
         exit(EXIT_FAILURE);
     }
 
@@ -82,7 +90,7 @@ int main(int argc, char *argv[]) {
     if (init_server_threads(tids, thread_params, server_socket, &server_logs_file, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(server_socket);
-        close_server_logs_file(&server_logs_file);
+        close_logs_file(&server_logs_file);
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
@@ -136,23 +144,36 @@ int main(int argc, char *argv[]) {
         */
     }
 
-    printf("Waiting for threads to empty queues...\n");
-    if (join_server_threads(tids) == STATUS_ERROR) {
+    printf("\nWaiting for threads to empty queues...\n");
+    if (join_threads(tids) == STATUS_ERROR) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(server_socket);
-        close_server_logs_file(&server_logs_file);
+        close_logs_file(&server_logs_file);
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
-    printf("Threads finished emptying queues and ended\n");
+    printf("Threads finished emptying queues and ended\n\n");
 
+    uint32_t total_messages = 0;
+    float total_sum = 0;
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+        uint32_t counter = thread_params[i].counter;
+        uint32_t tid = thread_params[i].id;
+        printf("Thread %d received %d messages from sensor %d\n", tid, counter, i);
+        printf("Thread %d received an average value of %.4f from sensor %d\n", tid, (float) (thread_params[i].sum / (float) counter), i);
+        total_messages += counter;
+        total_sum += thread_params[i].sum;
+    }
+    printf("Total messages received by all threads: %d\n", total_messages);
+
+    printf("Average value received by all threads: %.4f\n", (float) (total_sum / (float) total_messages));
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
         exit(EXIT_FAILURE);
     }
 
-    if (close_server_logs_file(&server_logs_file) == STATUS_ERROR) {
+    if (close_logs_file(&server_logs_file) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the server logs file\n");
         exit(EXIT_FAILURE);
     }
@@ -161,7 +182,7 @@ int main(int argc, char *argv[]) {
 
 	cmdline_parser_free(&args);
 
-    printf("Terminating server\n");
+    printf("\nTerminating server\n");
     
     return 0;
 }
@@ -172,8 +193,9 @@ void *handle_client(void *arg){ //TODO
     server_thread_params_t *params = (server_thread_params_t *) arg;
     //printf("Thread %d is waiting\n", params->id);
 
-    //int server_socket = params->server_socket;
+    
     uint32_t id = params->id;
+    //int server_socket = params->server_socket;
     queue_thread_safe_t *queue = params->queue;
     logs_file_t *server_logs_file = params->server_logs_file;
 
@@ -192,12 +214,15 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
 
-        if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
+        if (log_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
             fprintf(stderr, "Could not log sensor data\n");
             free(data);
             continue;
         }
         
+        params->counter++;
+        params->sum += get_float_value(data);
+
         //sleep(1);
 
         free(data);  

@@ -15,13 +15,7 @@
 #define SENSOR_RATE (10) // Define the desired frequency in Hz
 #define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
 
-#define SERVER_LOGS_FILE "server_logs.txt"
-#define CLIENT_LOGS_FILE "client_logs.txt"
-
-typedef struct {
-    FILE *file;
-    pthread_mutex_t mutex;
-} logs_file_t;
+#define TIME_BUFFER_SIZE (20) 
 
 typedef enum {
 	PROTO_SENSOR_DATA,
@@ -42,7 +36,21 @@ int validate_port(int server_port);
 void disable_buffering(void);
 int close_socket(int server_socket);
 float get_float_value(proto_sensor_data_t *data);
+int get_current_time(char **buffer);
 
-void common(void);
+int join_threads(pthread_t *tids);
+
+
+#define SERVER_LOGS_FILE "server_logs.txt"
+#define CLIENT_LOGS_FILE "client_logs.txt"
+
+typedef struct {
+    FILE *file;
+    pthread_mutex_t mutex;
+} logs_file_t;
+
+int open_logs_file(logs_file_t *server_logs_file, const char *filename);
+int close_logs_file(logs_file_t *server_logs_file);
+int log_sensor_data(logs_file_t *server_logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
 
 #endif // _COMMON_H_

@@ -31,16 +31,3 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
     return STATUS_SUCCESS;
 }
 
-int join_server_threads(pthread_t *tids){
-    //printf("Joining threads\n");
-
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        if (pthread_join(tids[i], NULL) != 0){
-            fprintf(stderr, "Error joining thread %d\n", i);
-            return STATUS_ERROR;
-        }
-    }
-
-    //printf("Threads joined\n");
-    return STATUS_SUCCESS;
-}
