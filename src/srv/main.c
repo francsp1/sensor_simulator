@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    printf("Server listening for UDP datagrams on port %d\n", server_port);    
+    printf("Server listening for UDP messages on port %d\n", server_port);    
 
     uint8_t buffer[MAX_BUFFER_SIZE];
 
