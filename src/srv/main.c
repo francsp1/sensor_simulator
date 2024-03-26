@@ -45,6 +45,13 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    struct sigaction sa; 
+    memset(&sa, 0, sizeof(struct sigaction));
+    if (init_signal_handlers(&sa) == STATUS_ERROR) {
+        fprintf(stderr, "Could not initialize signal handlers\n");
+        exit(EXIT_FAILURE);
+    }
+
     int server_socket = -1;
     if (init_server_socket(server_port, &server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize the socket\n");
@@ -52,6 +59,7 @@ int main(int argc, char *argv[]) {
     }
 
     logs_file_t server_logs_file;
+    memset(&server_logs_file, 0, sizeof(logs_file_t));
     if (open_server_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
         fprintf(stderr, "Could not open the server logs file\n");
         close_socket(server_socket);
@@ -73,28 +81,6 @@ int main(int argc, char *argv[]) {
     memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
     if (init_server_threads(tids, thread_params, server_socket, &server_logs_file, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
-        close_socket(server_socket);
-        close_server_logs_file(&server_logs_file);
-        destroy_queues(queues);
-        exit(EXIT_FAILURE);
-    }
-
-    
-    struct sigaction sa; 
-    memset(&sa, 0, sizeof(struct sigaction));
-    sa.sa_handler = signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    //sa.sa_flags |= SA_RESTART;
-    if (sigaction(SIGTERM, &sa, NULL) == -1) {
-        fprintf(stderr, "Could not initialize signal handler (SIGTERM)\n");
-        close_socket(server_socket);
-        close_server_logs_file(&server_logs_file);
-        destroy_queues(queues);
-        exit(EXIT_FAILURE);
-    }
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-        fprintf(stderr, "Could not initialize signal handler (SIGINT)\n");
         close_socket(server_socket);
         close_server_logs_file(&server_logs_file);
         destroy_queues(queues);
@@ -150,6 +136,7 @@ int main(int argc, char *argv[]) {
         */
     }
 
+    printf("Waiting for threads to empty queues...\n");
     if (join_server_threads(tids) == STATUS_ERROR) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(server_socket);
@@ -157,6 +144,8 @@ int main(int argc, char *argv[]) {
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
+    printf("Threads finished emptying queues and ended\n");
+
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
@@ -209,7 +198,7 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
         
-        //sleep(2);
+        //sleep(1);
 
         free(data);  
         data = NULL;      
@@ -218,15 +207,39 @@ void *handle_client(void *arg){ //TODO
     return NULL;
 }
 
+int init_signal_handlers(struct sigaction *sa) {
+    if (sa == NULL) {
+        fprintf(stderr, "Invalid signal action structure pointer\n");
+        return STATUS_ERROR;
+    }
+
+    sa->sa_handler = signal_handler;
+    sigemptyset(&sa->sa_mask);
+    sa->sa_flags = 0;
+    // sa->sa_flags |= SA_RESTART; // Optionally, uncomment this line if you want to enable automatic restart of interrupted system calls
+
+    if (sigaction(SIGTERM, sa, NULL) == -1) {
+        fprintf(stderr, "Initialization of SIGTERM failed\n");
+        return STATUS_ERROR;
+    }
+
+    if (sigaction(SIGINT, sa, NULL) == -1) {
+        fprintf(stderr, "Initialization of SIGINT failed\n");
+        return STATUS_ERROR;
+    }
+
+    return STATUS_SUCCESS;
+}
+
 void signal_handler(int signum) {
     int aux;	
 	aux = errno;   
 	
 	printf("\nSignal Received (%d)\n", signum);	
 
-    pthread_mutex_lock(&term_flag_mutex);
+    //pthread_mutex_lock(&term_flag_mutex);
     term_flag = 0;	
-    pthread_mutex_unlock(&term_flag_mutex);
+    //pthread_mutex_unlock(&term_flag_mutex);
 	
 	errno = aux;   
 }
