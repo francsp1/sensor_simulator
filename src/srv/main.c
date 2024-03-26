@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    /*
+    
     struct sigaction sa; 
     memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = signal_handler;
@@ -105,13 +105,13 @@ int main(int argc, char *argv[]) {
         destroy_queues(queues);
         exit(EXIT_FAILURE);
     }
-    */
+    
     
     uint8_t buffer[MAX_BUFFER_SIZE];
 
     //queue_thread_safe_t *queue_zero = queues[0];
 
-    while (1) { //Using the printf/fprintf to write to stdout/stderr is too slow 
+    while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
 
         memset(buffer,0,sizeof(buffer));
 
@@ -142,13 +142,13 @@ int main(int argc, char *argv[]) {
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
 
-        //print_queue(queues[data->hdr.sensor_id]);
+        print_queue(queues[data->hdr.sensor_id]);
 
-        /*
+        
         for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
-        */
+        
     }
 
     if (join_server_threads(tids) == STATUS_ERROR) {
@@ -193,12 +193,14 @@ void *handle_client(void *arg){ //TODO
 
     int count = 0;
 
-    while (1) {
+    while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
 
+        /*
         if (queue_get_number_of_elements_thread_safe(queue) == 0) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
+        */
 
         data = queue_remove_thread_safe(queue);
         if (data == NULL ) {
