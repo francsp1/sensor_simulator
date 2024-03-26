@@ -67,11 +67,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //print all queues addresses for debugging
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        printf("Queue %d: %p\n", i, (void *)queues[i]);
-    }
-
     pthread_t tids[NUMBER_OF_SENSORS];
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS];
@@ -90,7 +85,7 @@ int main(int argc, char *argv[]) {
     sa.sa_handler = signal_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
-    sa.sa_flags |= SA_RESTART;
+    //sa.sa_flags |= SA_RESTART;
     if (sigaction(SIGTERM, &sa, NULL) == -1) {
         fprintf(stderr, "Could not initialize signal handler (SIGTERM)\n");
         close_socket(server_socket);
@@ -106,7 +101,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    
+    printf("Server listening for UDP datagrams on port %d\n", server_port);    
+
     uint8_t buffer[MAX_BUFFER_SIZE];
 
     //queue_thread_safe_t *queue_zero = queues[0];
@@ -116,6 +112,9 @@ int main(int argc, char *argv[]) {
         memset(buffer,0,sizeof(buffer));
 
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
+            if (errno == EINTR) { // Interrupted by a signal 
+                continue;
+            }
             fprintf(stderr, "Could not read data from the socket\n");
             continue;
         }
@@ -138,17 +137,17 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
+        //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
 
-        print_queue(queues[data->hdr.sensor_id]);
+        //print_queue(queues[data->hdr.sensor_id]);
 
-        
+        /*
         for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
-        
+        */
     }
 
     if (join_server_threads(tids) == STATUS_ERROR) {
@@ -191,37 +190,18 @@ void *handle_client(void *arg){ //TODO
 
     proto_sensor_data_t *data = NULL;
 
-    int count = 0;
-
     while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
 
-        /*
         if (queue_get_number_of_elements_thread_safe(queue) == 0) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
-        */
 
         data = queue_remove_thread_safe(queue);
         if (data == NULL ) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
-
-        print_queue(queue);
-
-        printf("\nterm_flag 4: %d\n", term_flag);
-        count++;
-        printf("Element removed from the queue %d (Count: %d)\n", id, count);
-        //printf("q %d C: %d\n", id, count);
-
-
-        //print all data contents for debugging
-        printf("data: %p\n", (void *)data);
-        printf("data->hdr.type: %d\n", data->hdr.type);
-        printf("data->hdr.sensor_id: %d\n", data->hdr.sensor_id);
-        printf("data->hdr.len: %d\n", data->hdr.len);
-        printf("data->data: %f\n", get_float_value(data));
 
         if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
             fprintf(stderr, "Could not log sensor data\n");
@@ -250,3 +230,13 @@ void signal_handler(int signum) {
 	
 	errno = aux;   
 }
+
+
+/*
+    //print all data contents for debugging
+    printf("data: %p\n", (void *)data);
+    printf("data->hdr.type: %d\n", data->hdr.type);
+    printf("data->hdr.sensor_id: %d\n", data->hdr.sensor_id);
+    printf("data->hdr.len: %d\n", data->hdr.len);
+    printf("data->data: %f\n", get_float_value(data));
+*/

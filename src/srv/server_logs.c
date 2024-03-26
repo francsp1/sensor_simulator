@@ -6,7 +6,7 @@
 #include "common.h"
 
 int open_server_logs_file(logs_file_t *server_logs_file, const char *filename){
-    printf("Opening server logs file\n");
+    printf("Opening server logs file...\n");
     server_logs_file->file = fopen(filename, "a");
     if (server_logs_file->file == NULL) {
         fprintf(stderr, "Error opening server logs file \"%s\"\n", filename);

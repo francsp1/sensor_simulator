@@ -11,7 +11,7 @@
 #include "queue_thread_safe.h"
 
 int create_queues(queue_thread_safe_t **queues){
-    printf("Creating queues\n");
+    printf("Creating queues...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         queues[i] = queue_create_thread_safe();

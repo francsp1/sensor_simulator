@@ -16,6 +16,7 @@
 
 int init_server_socket(int server_port, int *p_server_socket_out){
 
+    printf("Initializing server socket...\n");
     int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket == -1) {
         fprintf(stderr, "Error creating server socket\n");
@@ -43,10 +44,10 @@ int init_server_socket(int server_port, int *p_server_socket_out){
         close(server_socket);
         return STATUS_ERROR;
     }
-
-    printf("Server listening for UDP messages on port %d\n", server_port);    
     
     *p_server_socket_out = server_socket;
+
+    printf("Server socket initialized\n");
     
     return STATUS_SUCCESS;
 }
@@ -60,8 +61,8 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
     //printf("Waiting for a client message...\n");
 
     if ((read_bytes = recvfrom(server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
-        if (errno == EINTR) { // Interrupted by a signal (SIGTERM in this case)
-            return STATUS_SUCCESS;
+        if (errno == EINTR) { // Interrupted by a signal 
+            return STATUS_ERROR;
         }
         fprintf(stderr, "Error receiving data from client\n");
         return STATUS_ERROR;
