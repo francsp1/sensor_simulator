@@ -1,3 +1,13 @@
+/**
+ * @file server_threads.h
+ * @brief Header file for the server threads
+ * 
+ * This header file provides the prototypes of the functions to initialize the server threads and the structure to pass the parameters to the server threads
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/srv/server_threads.h
+ */
 #ifndef _THREADS_H
 #define _THREADS_H
 
@@ -43,3 +53,5 @@ typedef struct server_thread_params {
 int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, logs_file_t *server_logs_file, queue_thread_safe_t **queues, void *(*handle_client) (void *));
 
 #endif  // _THREADS_H
+
+// Path: inc/srv/server_threads.h

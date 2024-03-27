@@ -1,3 +1,13 @@
+/**
+ * @file main.h
+ * @brief Main header for the client application
+ * 
+ * this header file contains the prototypes of the function tis ran by the client threads
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/cli/main.h
+ */
 #ifndef _MAIN_CLI_H_
 #define _MAIN_CLI_H_
 
@@ -10,3 +20,5 @@
 void *handle_server(void *arg);
 
 #endif // _MAIN_CLI_H_
+
+// Path: inc/cli/main.h

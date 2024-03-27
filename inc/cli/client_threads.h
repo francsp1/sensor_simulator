@@ -1,3 +1,13 @@
+/**
+ * @file client_threads.h 
+ * @brief Header file for the client threads
+ * 
+ * This header file provides the prototypes of the functions to initialize the client threads and the structure to pass the parameters to the client threads
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/cli/client_threads.h
+ */
 #ifndef _CLIENT_THREADS_H
 #define _CLIENT_THREADS_H
 
@@ -38,3 +48,5 @@ typedef struct client_thread_params {
 int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, int client_socket, struct sockaddr_in *server_endpoint, logs_file_t  *client_logs_file, int packets_per_sensor, void *(*handle_client) (void *));
 
 #endif // _CLIENT_THREADS_H
+
+// Path: inc/cli/client_threads.h

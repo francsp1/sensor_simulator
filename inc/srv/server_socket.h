@@ -1,3 +1,13 @@
+/**
+ * @file server_socket.h
+ * @brief Header file for the server socket functions
+ * 
+ * This header file provides the prototypes of the functions to create and manage the server socket, receive and deserialize sensor data from the client
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/srv/server_socket.h
+ */
 #ifndef _SERVER_SOCKET_H_
 #define _SERVER_SOCKET_H_
 
@@ -32,3 +42,5 @@ int receive_from_socket(int server_socket, uint8_t *buffer);
 int deserialize_sensor_data(uint8_t *buffer, proto_sensor_data_t *p_data_out);
 
 #endif // _SERVER_SOCKET_H_
+
+// Path: src/srv/server_socket.c

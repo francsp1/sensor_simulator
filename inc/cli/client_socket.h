@@ -1,3 +1,13 @@
+/**
+ * @file client_socket.h
+ * @brief Header file for the client socket functions
+ * 
+ * This header file provides the prototypes of the functions to create and manage the client socket, pack, serialize and send sensor data to the server
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/cli/client_socket.h
+ */
 #ifndef _CLIENT_SOCKET_H_
 #define _CLIENT_SOCKET_H_
 
@@ -44,3 +54,5 @@ int serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serial
 int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint);
 
 #endif // _CLIENT_SOCKET_H_
+
+// Path: inc/cli/client_socket.h

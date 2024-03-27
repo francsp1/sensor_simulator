@@ -1,3 +1,13 @@
+/**
+ * @file server_queues.h
+ * @brief Header file for the server queues
+ * 
+ * This header file provides the prototypes of the functions to create and destroy the server queues
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/srv/server_queues.h
+ */
 #ifndef _SERVER_QUEUES_H_
 #define _SERVER_QUEUES_H_
 
@@ -29,3 +39,5 @@ int destroy_queues(queue_thread_safe_t **queues);
 int print_queue(const queue_thread_safe_t *queue);
 
 #endif // _SERVER_QUEUES_H_
+
+// Path: inc/srv/server_queues.h

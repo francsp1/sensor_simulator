@@ -1,3 +1,13 @@
+/**
+ * @file common.h
+ * @brief Header file for the common functions, structures and macros
+ * 
+ * This header file provides the prototypes of the common functions, structures and macros used by the server and the client
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path inc/common.h
+ */
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
@@ -15,7 +25,7 @@
 #define SENSOR_RATE (10) // Define the desired frequency in Hz
 #define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
 
-#define TIME_BUFFER_SIZE (20) 
+#define TIME_BUFFER_SIZE (20) // Size of the buffer to store the time string
 
 /**
  * This enumeration defines the possible types of messages that can be sent between the server and the clients
@@ -42,7 +52,7 @@ typedef struct {
 } proto_hdr_t;
 
 /**
- * This structure defines the messages that will be exchanged between the server and the clients
+ * This structure defines the messages that will be exchanged between the server and the client
  * @brief Messages exchanged between the server and the clients
  * @param hdr Header of the message
  * @param data Data of the message
@@ -174,3 +184,5 @@ int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, ui
 
 
 #endif // _COMMON_H_
+
+// Path: inc/common.h
