@@ -1,3 +1,13 @@
+/**
+ * @file main.c
+ * @brief Main file for the server application
+ * 
+ * This file contains the main function for the server application, the function ran by the server threads and the signal handler
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/srv/main.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -281,12 +291,4 @@ void signal_handler(int signum) {
 	errno = aux;   
 }
 
-
-/*
-    //print all data contents for debugging
-    printf("data: %p\n", (void *)data);
-    printf("data->hdr.type: %d\n", data->hdr.type);
-    printf("data->hdr.sensor_id: %d\n", data->hdr.sensor_id);
-    printf("data->hdr.len: %d\n", data->hdr.len);
-    printf("data->data: %f\n", get_float_value(data));
-*/
+// Path: src/srv/main.c

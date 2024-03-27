@@ -1,3 +1,13 @@
+/**
+ * @file server_threads.c
+ * @brief Implementation of the server threads
+ * 
+ * This file contains the functions needed to handle server threads
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/srv/server_threads.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -31,3 +41,4 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
     return STATUS_SUCCESS;
 }
 
+// Path: src/srv/server_threads.c

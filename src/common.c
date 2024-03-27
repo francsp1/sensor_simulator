@@ -1,3 +1,13 @@
+/**
+ * @file common.c
+ * @brief Common functions used by both the server and the client
+ * 
+ * This file contains common functions, structutes and macros used by both the server and the client
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/common.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

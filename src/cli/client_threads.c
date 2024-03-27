@@ -1,3 +1,13 @@
+/**
+ * @file client_threads.c
+ * @brief Implementation of the client threads
+ * 
+ * This file contains the functions needed to handle client threads
+ *  
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/cli/client_threads.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -29,3 +39,5 @@ int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, 
     printf("Threads initialized\n");
     return STATUS_SUCCESS;
 }
+
+// Path: src/cli/client_threads.c

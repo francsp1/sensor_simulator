@@ -1,3 +1,13 @@
+/**
+ * @file main.c
+ * @brief Main file for the client application
+ * 
+ * This file contains the main function for the client application and the function ran by the client threads
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/cli/main.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -141,23 +151,4 @@ void *handle_server(void *arg) {
     return NULL;
 }    
 
-/*
-    printf("Debug data\n");
-    printf("data.hdr.type: %d\n", ntohl(data.hdr.type));
-    printf("data.hdr.sensor_id: %d\n", ntohl(data.hdr.sensor_id));
-    printf("data.hdr.len: %d\n", ntohs(data.hdr.len));
-    */
-
-/*
-
-    for (uint32_t i = 0; i < 100; i++){
-        memset(&data, 0, sizeof(proto_sensor_data_t));
-        serialize_sensor_data(&data, id);
-
-        printf("i: %d\n", i);
-        if (send_to_socket(client_socket, &data, server_endpoint) == STATUS_ERROR) {
-            fprintf(stderr, "Could not send data to server\n");
-            continue;
-        }
-    }
-*/
+// Path: src/cli/main.c

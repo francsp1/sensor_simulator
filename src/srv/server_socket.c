@@ -1,3 +1,13 @@
+/**
+ * @file server_socket.c
+ * @brief This file implements the server socket functions
+ * 
+ * This file implements the functions to create the server socket, receive and deserialize sensor data
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/srv/server_socket.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -85,3 +95,5 @@ int deserialize_sensor_data(uint8_t *buffer, proto_sensor_data_t *p_data_out) {
 
     return STATUS_SUCCESS;
 }
+
+// Path: src/srv/server_socket.c

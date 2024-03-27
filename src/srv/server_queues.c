@@ -1,3 +1,13 @@
+/**
+ * @file server_queues.c
+ * @brief Implementation of the server queues
+ * 
+ * This file implements the functions to create and destroy the server queues
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/srv/server_queues.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -81,3 +91,5 @@ int print_queue(const queue_thread_safe_t *queue){
     return STATUS_SUCCESS;
     
 }
+
+// Path: src/srv/server_queues.c

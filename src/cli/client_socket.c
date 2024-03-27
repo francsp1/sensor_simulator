@@ -1,3 +1,13 @@
+/**
+ * @file client_socket.c
+ * @brief This file implements the client socket functions
+ * 
+ * This file implements the functions to create and manage the client socket, pack, serialize and send sensor data to the server
+ * 
+ * @date 27/03/2024
+ * @authors Francisco Pedrosa
+ * @path src/cli/client_socket.c
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -93,3 +103,5 @@ int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr
 
     return STATUS_SUCCESS;
 }
+
+// Path: src/cli/client_socket.c
