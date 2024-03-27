@@ -19,7 +19,6 @@
 #include "server_socket.h"
 #include "server_threads.h"
 #include "server_queues.h"
-#include "server_logs.h"
 
 #include "queue_thread_safe.h"
 
