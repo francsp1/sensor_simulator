@@ -28,6 +28,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 	}
 
+    int packets_per_sensor = args.packets_per_sensor_arg;
+    if (packets_per_sensor <= 0) {
+        fprintf(stderr, "Error: --packets_per_sensor (-s) must receive a positive value\n");
+        exit(EXIT_FAILURE);
+    }
+
     int server_port = args.port_arg;
     if (validate_port(server_port) == STATUS_ERROR) {
         fprintf(stderr, "Wrong port value inserted\n");
@@ -54,7 +60,7 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     client_thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(client_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, handle_server) == STATUS_ERROR) {
+    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, &client_logs_file, packets_per_sensor, handle_server) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(client_socket);
         close_logs_file(&client_logs_file);
@@ -83,34 +89,51 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void *handle_server(void *arg){ //TODO
-    //TODO
+void *handle_server(void *arg) { 
     client_thread_params_t *params = (client_thread_params_t *) arg;
     
     struct sockaddr_in *server_endpoint = params->server_endpoint;
     uint32_t id = params->id;
     int client_socket = params->client_socket;
+    logs_file_t *client_logs_file = params->client_logs_file;
+    int packets_per_thread = params->packets_per_sensor;
 
     struct timespec delay = {0};
     delay.tv_sec = 0;
     delay.tv_nsec = DELAY_MS * 1000000; // Convert milliseconds to nanoseconds
 
     proto_sensor_data_t data;
+    proto_sensor_data_t serialized_data;
 
-    int aux = 50;
+    srand(time(NULL) * id);
     
-    while (aux) {
+    while (packets_per_thread) {
         memset(&data, 0, sizeof(proto_sensor_data_t));
-        serialize_sensor_data(&data, id);
+        memset(&serialized_data, 0, sizeof(proto_sensor_data_t));
 
-        if (send_to_socket(client_socket, &data, server_endpoint) == STATUS_ERROR) {
+        if (pack_sensor_data(&data, id) == STATUS_ERROR) {
+            fprintf(stderr, "Could not pack sensor data\n");
+            continue;
+        }
+
+        if (serialize_sensor_data(&data, &serialized_data) == STATUS_ERROR) {
+            fprintf(stderr, "Could not serialize sensor data\n");
+            continue;
+        }
+
+        if (send_to_socket(client_socket, &serialized_data, server_endpoint) == STATUS_ERROR) {
             fprintf(stderr, "Could not send data to server\n");
+            continue;
+        }
+
+        if (log_client_sensor_data(client_logs_file, &data, id) == STATUS_ERROR) {
+            fprintf(stderr, "Could not log sensor data\n");
             continue;
         }
 
         nanosleep(&delay, NULL);
 
-        aux--;
+        packets_per_thread--;
     }
 
     printf("Thread %d finished\n", id);

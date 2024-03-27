@@ -154,19 +154,32 @@ int main(int argc, char *argv[]) {
     }
     printf("Threads finished emptying queues and ended\n\n");
 
+
     uint32_t total_messages = 0;
     float total_sum = 0;
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         uint32_t counter = thread_params[i].counter;
         uint32_t tid = thread_params[i].id;
         printf("Thread %d received %d messages from sensor %d\n", tid, counter, i);
-        printf("Thread %d received an average value of %.4f from sensor %d\n", tid, (float) (thread_params[i].sum / (float) counter), i);
+
+        float result = 0;
+
+        if (counter > 0) {
+            result = (float) (thread_params[i].sum / (float) counter);
+        }
+
+        printf("Thread %d received an average value of %.4f from sensor %d\n", tid, result, i);
         total_messages += counter;
         total_sum += thread_params[i].sum;
     }
-    printf("Total messages received by all threads: %d\n", total_messages);
 
-    printf("Average value received by all threads: %.4f\n", (float) (total_sum / (float) total_messages));
+    printf("Total messages received by all threads: %d\n", total_messages);
+    float total_result = 0;
+    if (total_messages > 0) {
+        total_result = (float) (total_sum / (float) total_messages);
+    }
+    printf("Average value received by all threads: %.4f\n", total_result);
+    
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
@@ -214,7 +227,7 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
 
-        if (log_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
+        if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
             fprintf(stderr, "Could not log sensor data\n");
             free(data);
             continue;

@@ -31,6 +31,16 @@ float get_float_value(proto_sensor_data_t *data){
     return *((float *)&(data->data));
 }
 
+int generate_random_float(float *p_float_out) {
+    if (p_float_out == NULL) {
+        return STATUS_ERROR;
+    }
+
+    *p_float_out = ((float)rand() / RAND_MAX) * 100.0;
+
+    return STATUS_SUCCESS; 
+}
+
 int get_current_time(char **buffer) {
     time_t rawtime;
     struct tm *timeinfo;
@@ -113,7 +123,16 @@ int close_logs_file(logs_file_t *logs_file){
     return STATUS_SUCCESS;
 }
 
-int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
+int log_server_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
+    return log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d received data from sensor %d. Value: %f\n");
+}
+
+int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
+    return log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d sent data from sensor %d. Value: %f\n");
+}
+
+
+int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
     //printf("Logging sensor data\n");
 
     char *time = NULL;
@@ -123,7 +142,7 @@ int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, ui
     }
 
     pthread_mutex_lock(&(logs_file->mutex));
-    fprintf(logs_file->file, "[%s] Thread %d received data from sensor %d. Value: %f\n", time, thread_id,sensor_data->hdr.sensor_id, get_float_value(sensor_data));
+    fprintf(logs_file->file, format, time, thread_id,sensor_data->hdr.sensor_id, get_float_value(sensor_data));
     fflush(logs_file->file);
     pthread_mutex_unlock(&(logs_file->mutex));
 

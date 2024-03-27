@@ -36,6 +36,7 @@ int validate_port(int server_port);
 void disable_buffering(void);
 int close_socket(int server_socket);
 float get_float_value(proto_sensor_data_t *data);
+int generate_random_float(float *p_float_out);
 int get_current_time(char **buffer);
 
 int join_threads(pthread_t *tids);
@@ -51,6 +52,9 @@ typedef struct {
 
 int open_logs_file(logs_file_t *server_logs_file, const char *filename);
 int close_logs_file(logs_file_t *server_logs_file);
-int log_sensor_data(logs_file_t *server_logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
+int log_server_sensor_data(logs_file_t *server_logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
+int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
+int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
+
 
 #endif // _COMMON_H_

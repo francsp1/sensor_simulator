@@ -57,14 +57,27 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
     return STATUS_SUCCESS;
 }
 
-int serialize_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id){
-
-    data->hdr.type = htonl(PROTO_SENSOR_DATA);
-    data->hdr.sensor_id = htonl(sensor_id);
-    data->hdr.len = htons(sizeof(float));
-    float number = 3.1415f;
-    data->data = htonl( *((uint32_t*) &number));
+int pack_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id) {
+    data->hdr.type = PROTO_SENSOR_DATA;
+    data->hdr.sensor_id = sensor_id;
+    data->hdr.len = sizeof(float);
+    float number = 0.0f;
+    if (generate_random_float(&number) == STATUS_ERROR) {
+        fprintf(stderr, "Could not generate random float\n");
+        return STATUS_ERROR;
+    }
+    data->data = (*((uint32_t*) &number));
     
+    return STATUS_SUCCESS;
+}
+
+int serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serialized_data){
+
+    serialized_data->hdr.type = htonl(data->hdr.type);
+    serialized_data->hdr.sensor_id = htonl(data->hdr.sensor_id);
+    serialized_data->hdr.len = htons(data->hdr.len);
+    serialized_data->data = htonl(data->data);
+
     return STATUS_SUCCESS;
 }
 
