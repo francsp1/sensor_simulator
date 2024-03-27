@@ -23,7 +23,7 @@
 #include "queue_thread_safe.h"
 
 volatile sig_atomic_t term_flag = 1;
-pthread_mutex_t term_flag_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t term_flag_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
