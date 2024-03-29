@@ -20,7 +20,7 @@
 #define MAX_PENDING_CONECTIONS (2048)
 #define MAX_BUFFER_SIZE (1024)
 
-#define NUMBER_OF_SENSORS ( (uint32_t) (10) )
+#define NUMBER_OF_SENSORS ( (uint32_t) (5) )
 
 #define SENSOR_RATE (10) // Define the desired frequency in Hz
 #define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
