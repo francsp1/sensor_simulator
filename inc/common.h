@@ -17,7 +17,7 @@
 #define STATUS_ERROR   ( (int) (-1) )
 #define STATUS_SUCCESS ( (int) (0)  )
 
-#define MAX_PENDING_CONECTIONS (2048)
+//#define MAX_PENDING_CONECTIONS (2048)
 #define MAX_BUFFER_SIZE (1024)
 
 #define NUMBER_OF_SENSORS ( (uint32_t) (5) )
