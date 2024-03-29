@@ -74,7 +74,7 @@ obj/common.o: src/common.c inc/common.h
 
 # Compile Server
 $(TARGET_SRV): $(OBJ_SRV) 
-	gcc -o $@ $^ -Lsrc/lib -lqueue
+	gcc -o $@ $^ -pthread -Lsrc/lib -lqueue
 
 # Generate .o files from every .c file in src/srv
 $(OBJ_S): obj/srv/%.o: src/srv/%.c
@@ -82,7 +82,7 @@ $(OBJ_S): obj/srv/%.o: src/srv/%.c
 
 # Compile Client
 $(TARGET_CLI): $(OBJ_CLI) 
-	gcc -o $@ $^
+	gcc -o $@ $^ -pthread
 
 # Generate .o files from every .c file in src/cli
 $(OBJ_C): obj/cli/%.o: src/cli/%.c

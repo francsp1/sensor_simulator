@@ -2,7 +2,7 @@
  * @file common.c
  * @brief Common functions used by both the server and the client
  * 
- * This file contains common functions, structutes and macros used by both the server and the client
+ * This file contains common functions, structures and macros used by both the server and the client
  * 
  * @date 27/03/2024
  * @authors Francisco Pedrosa
@@ -134,15 +134,15 @@ int close_logs_file(logs_file_t *logs_file){
 }
 
 int log_server_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
-    return log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d received data from sensor %d. Value: %f\n");
+    return _log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d received data from sensor %d. Value: %f\n");
 }
 
 int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
-    return log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d sent data from sensor %d. Value: %f\n");
+    return _log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d sent data from sensor %d. Value: %f\n");
 }
 
 
-int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
+int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
     //printf("Logging sensor data\n");
 
     char *time = NULL;

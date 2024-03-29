@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Main file for the server application
  * 
- * This file contains the main function for the server application, the function ran by the server threads and the signal handler
+ * This file contains the main function for the server application, the function ran by the server threads and the signal handler function
  * 
  * @date 27/03/2024
  * @authors Francisco Pedrosa
@@ -33,7 +33,6 @@
 #include "queue_thread_safe.h"
 
 volatile sig_atomic_t term_flag = 1;
-//pthread_mutex_t term_flag_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
@@ -284,9 +283,7 @@ void signal_handler(int signum) {
 	
 	printf("\nSignal Received (%d)\n", signum);	
 
-    //pthread_mutex_lock(&term_flag_mutex);
     term_flag = 0;	
-    //pthread_mutex_unlock(&term_flag_mutex);
 	
 	errno = aux;   
 }

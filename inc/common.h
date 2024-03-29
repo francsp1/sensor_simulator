@@ -42,7 +42,7 @@ typedef enum {
  * @brief Header of the messages
  * @param type Type of the message (proto_type_e)
  * @param sensor_id Sensor ID
- * @param len Length of the message
+ * @param len Length of the data 
  * @struct proto_hdr_t
  */
 typedef struct {
@@ -52,7 +52,7 @@ typedef struct {
 } proto_hdr_t;
 
 /**
- * This structure defines the messages that will be exchanged between the server and the client
+ * This structure defines the messages that the client will send to the server with the sensor data
  * @brief Messages exchanged between the server and the clients
  * @param hdr Header of the message
  * @param data Data of the message
@@ -179,8 +179,9 @@ int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_d
  * @param thread_id ID of the thread/sensor that sent/received the sensor data
  * @param format Format of the log message
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
+ * @note this function is used by log_server_sensor_data and log_client_sensor_data and should not be called directly
  */
-int log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
+int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
 
 
 #endif // _COMMON_H_
