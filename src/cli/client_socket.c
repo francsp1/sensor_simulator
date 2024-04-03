@@ -97,7 +97,7 @@ int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr
     printf("Sending data to server...");
 	if ((sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in))) == -1) {
         fprintf(stderr, "Error sending data to server\n");
-        exit(EXIT_FAILURE);
+        return STATUS_ERROR;
     }
 	printf("ok.  (%ld bytes sent)\n", sent_bytes);
 

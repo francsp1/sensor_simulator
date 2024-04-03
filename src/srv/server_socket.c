@@ -72,6 +72,7 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
 
     if ((read_bytes = recvfrom(server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
         if (errno == EINTR) { // Interrupted by a signal 
+            fprintf(stderr, "recvfrom interrupted by a signal\n");
             return STATUS_ERROR;
         }
         fprintf(stderr, "Error receiving data from client\n");

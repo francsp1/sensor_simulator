@@ -34,6 +34,8 @@
 
 volatile sig_atomic_t term_flag = 1;
 
+queue_thread_safe_t **p_queues = NULL;
+
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
@@ -83,6 +85,7 @@ int main(int argc, char *argv[]) {
     }
 
     queue_thread_safe_t *queues[NUMBER_OF_SENSORS];
+    p_queues = queues;
     memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
@@ -100,6 +103,7 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         close_logs_file(&server_logs_file);
         destroy_queues(queues);
+        p_queues = NULL;
         exit(EXIT_FAILURE);
     }
     
@@ -115,13 +119,13 @@ int main(int argc, char *argv[]) {
 
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
             if (errno == EINTR) { // Interrupted by a signal 
-                continue;
+                break;
             }
             fprintf(stderr, "Could not read data from the socket\n");
             continue;
         }
 
-        proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t)); // The corresponding thread will free this memory
+        proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t )); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store sensor data\n");
             continue;
@@ -131,11 +135,13 @@ int main(int argc, char *argv[]) {
 
         if (data->hdr.type != PROTO_SENSOR_DATA) {
             fprintf(stderr, "Invalid message type\n");
+            free(data);
             continue;
         }
 
         if (data->hdr.sensor_id >= NUMBER_OF_SENSORS) {
             fprintf(stderr, "Invalid sensor ID\n");
+            free(data);
             continue;
         }
 
@@ -158,6 +164,7 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         close_logs_file(&server_logs_file);
         destroy_queues(queues);
+        p_queues = NULL;
         exit(EXIT_FAILURE);
     }
     printf("Threads finished emptying queues and ended\n\n");
@@ -200,6 +207,7 @@ int main(int argc, char *argv[]) {
     }
 
     destroy_queues(queues);
+    p_queues = NULL;
 
 	cmdline_parser_free(&args);
 
@@ -224,12 +232,14 @@ void *handle_client(void *arg){ //TODO
 
     while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
 
+        /*
         if (queue_get_number_of_elements_thread_safe(queue) == 0) {
             //printf("No data in the queue %d\n", id);
             continue;
         }
+        */
 
-        data = queue_remove_thread_safe(queue);
+        data = queue_remove_thread_safe_with_condition(queue, &term_flag);
         if (data == NULL ) {
             //printf("No data in the queue %d\n", id);
             continue;
@@ -284,6 +294,10 @@ void signal_handler(int signum) {
 	printf("\nSignal Received (%d)\n", signum);	
 
     term_flag = 0;	
+
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+        pthread_cond_broadcast(&(p_queues[i]->cond));
+    }
 	
 	errno = aux;   
 }
