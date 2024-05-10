@@ -6,12 +6,12 @@ TARGET_CLI =bin/client
 CFLAGS =-std=c11 -Wall -Wextra -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
 
 SRC_SRV =$(wildcard src/srv/*.c)
-OBJ_S   =$(SRC_SRV:src/srv/%.c=obj/srv/%.o)
-OBJ_SRV =$(OBJ_S) obj/common.o obj/srv/args/$(PROGRAM_OPT).o
+OBJ_SRV   =$(SRC_SRV:src/srv/%.c=obj/srv/%.o)
+SERVER_OBJECTS =$(OBJ_SRV) obj/common.o obj/srv/args/$(PROGRAM_OPT).o
 
 SRC_CLI =$(wildcard src/cli/*.c) 
-OBJ_C   =$(SRC_CLI:src/cli/%.c=obj/cli/%.o) 
-OBJ_CLI =$(OBJ_C) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
+OBJ_CLI   =$(SRC_CLI:src/cli/%.c=obj/cli/%.o) 
+CLIENT_OBJECTS =$(OBJ_CLI) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
 
 .PHONY: all default clean
 
@@ -73,17 +73,17 @@ obj/common.o: src/common.c inc/common.h
 	gcc $(CFLAGS) -c $< -o $@ -Iinc
 
 # Compile Server
-$(TARGET_SRV): $(OBJ_SRV) 
+$(TARGET_SRV): $(SERVER_OBJECTS) 
 	gcc -o $@ $^ -pthread -Lsrc/lib -lqueue
 
 # Generate .o files from every .c file in src/srv
-$(OBJ_S): obj/srv/%.o: src/srv/%.c
+$(OBJ_SRV): obj/srv/%.o: src/srv/%.c
 	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/lib -Iinc/srv -Iinc/srv/args 
 
 # Compile Client
-$(TARGET_CLI): $(OBJ_CLI) 
+$(TARGET_CLI): $(CLIENT_OBJECTS) 
 	gcc -o $@ $^ -pthread
 
 # Generate .o files from every .c file in src/cli
-$(OBJ_C): obj/cli/%.o: src/cli/%.c
+$(OBJ_CLI): obj/cli/%.o: src/cli/%.c
 	gcc $(CFLAGS) -c $< -o $@ -Iinc -Iinc/lib -Iinc/cli -Iinc/cli/args
