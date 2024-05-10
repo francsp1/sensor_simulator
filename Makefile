@@ -11,7 +11,7 @@ CLI_INC_DIRS =-Iinc -Iinc/lib -Iinc/cli -Iinc/cli/args
 SRV_LIBS =-pthread -lqueue -Lsrc/lib  #-lm
 CLI_LIBS =-pthread
 
-CFLAGS =-std=c11 -Wall -Wextra -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
+CFLAGS =-ggdb -std=c11 -Wall -Wextra -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
 
 SRC_SRV =$(wildcard src/srv/*.c)
 OBJ_SRV   =$(SRC_SRV:src/srv/%.c=obj/srv/%.o)
@@ -71,10 +71,10 @@ src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h: src/cli/args/$(PROG
 # Generate gengetopt .o files with no warnings
 # Server
 obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h
-	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ -Iinc -Iinc/srv -Iinc/srv/args
+	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ $(SRV_INC_DIRS)
 # Client
 obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h
-	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ -Iinc -Iinc/cli -Iinc/cli/args
+	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ $(CLI_INC_DIRS)
 
 
 obj/common.o: src/common.c inc/common.h
