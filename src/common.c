@@ -77,7 +77,7 @@ int get_current_time(char **buffer) {
 
     // Format time
     size_t bytes = strftime(*buffer, TIME_BUFFER_SIZE, "%d-%m-%Y %H:%M:%S", timeinfo);
-    if (bytes != TIME_BUFFER_SIZE - 1) {
+    if (bytes == 0) {
         fprintf(stderr, "Error formatting time\n");
         free(*buffer);
         return STATUS_ERROR;
