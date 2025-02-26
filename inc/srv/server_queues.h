@@ -22,6 +22,16 @@
 int create_queues(queue_thread_safe_t **queues);
 
 /**
+ * This function destroys n queues and frees the memory allocated for them
+ * @brief Destroy n queues
+ * @param queues Pointer to the array of queue_thread_safe_t structures where the queues are stored
+ * @param n Number of queues to be destroyed
+ * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
+ * @note This function should only be used internally. Do not use it directly
+ */
+int _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n);
+
+/**
  * This function destroys the queues and frees the memory allocated for them
  * @brief Destroy the queues
  * @param queues Pointer to the array of queue_thread_safe_t structures where the queues are stored
