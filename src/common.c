@@ -123,7 +123,8 @@ int open_logs_files(logs_file_t logs_files[]) {
     printf("Opening logs file...\n");
     
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
-        int needed_size = snprintf(NULL, 0, "sensor_%u_logs.txt", i) + 1; // +1 for null terminator
+        const char *format = "logs/sensor_%u_logs.txt";
+        int needed_size = snprintf(NULL, 0, format, i) + 1; // +1 for null terminator
 
         
         logs_files[i].filename = (char *) calloc(needed_size, sizeof(char));
@@ -133,7 +134,7 @@ int open_logs_files(logs_file_t logs_files[]) {
             return STATUS_ERROR;
         }
 
-        snprintf(logs_files[i].filename, needed_size, "sensor_%u_logs.txt", i);
+        snprintf(logs_files[i].filename, needed_size, format, i);
 
         logs_files[i].file = fopen(logs_files[i].filename, "a");
         if (logs_files[i].file == NULL) {
