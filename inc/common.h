@@ -131,6 +131,7 @@ int join_threads(pthread_t *tids);
  */
 typedef struct {
     FILE *file;
+    char *filename;
     pthread_mutex_t mutex;
 } logs_file_t;
 
@@ -143,6 +144,8 @@ typedef struct {
  */
 int open_logs_file(logs_file_t *server_logs_file, const char *filename);
 
+int open_logs_files(logs_file_t logs_files[]);
+
 /**
  * This function closes the logs file
  * @brief Close the logs file
@@ -150,6 +153,10 @@ int open_logs_file(logs_file_t *server_logs_file, const char *filename);
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
 int close_logs_file(logs_file_t *server_logs_file);
+
+int _close_n_logs_files(logs_file_t logs_files[], uint32_t n);
+
+int close_logs_files(logs_file_t logs_files[]);
 
 /**
  * This function logs the sensor data received by the server

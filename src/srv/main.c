@@ -84,13 +84,13 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // logs_file_t server_logs_files[NUMBER_OF_SENSORS];
-    // memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
-    // if (open_logs_files(server_logs_files, NUMBER_OF_SENSORS) == STATUS_ERROR) {
-    //     fprintf(stderr, "Could not open all the server logs files\n");
-    //     close_socket(server_socket);
-    //     exit(EXIT_FAILURE);
-    // }
+    logs_file_t server_logs_files[NUMBER_OF_SENSORS];
+    memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
+    if (open_logs_files(server_logs_files) == STATUS_ERROR) {
+        fprintf(stderr, "Could not open all the server logs files\n");
+        close_socket(server_socket);
+        exit(EXIT_FAILURE);
+    }
 
     queue_thread_safe_t *queues[NUMBER_OF_SENSORS];
     p_queues = queues;

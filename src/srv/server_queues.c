@@ -51,7 +51,6 @@ int _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
 }
 
 int destroy_queues(queue_thread_safe_t **queues){
-
     return _destroy_n_queues(queues, NUMBER_OF_SENSORS);
 }
 

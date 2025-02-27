@@ -119,7 +119,38 @@ int open_logs_file(logs_file_t *logs_file, const char *filename){
     return STATUS_SUCCESS;
 }
 
-int close_logs_file(logs_file_t *logs_file){
+int open_logs_files(logs_file_t logs_files[]) {
+    printf("Opening logs file...\n");
+    
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
+        int needed_size = snprintf(NULL, 0, "sensor_%u_logs.txt", i) + 1; // +1 for null terminator
+
+        
+        logs_files[i].filename = (char *) calloc(needed_size, sizeof(char));
+        if (logs_files[i].filename == NULL) {
+            fprintf(stderr, "Error allocating memory for logs file name of sensor %d\n", i);
+            _close_n_logs_files(logs_files, i);
+            return STATUS_ERROR;
+        }
+
+        snprintf(logs_files[i].filename, needed_size, "sensor_%u_logs.txt", i);
+
+        logs_files[i].file = fopen(logs_files[i].filename, "a");
+        if (logs_files[i].file == NULL) {
+            fprintf(stderr, "Error opening logs file \"%s\" from sensor %d\n", logs_files[i].filename, i);
+            if (logs_files[i].filename != NULL){
+                free(logs_files[i].filename);
+                logs_files[i].filename = NULL;
+            }
+            _close_n_logs_files(logs_files, i);
+            return STATUS_ERROR;
+        }
+    }
+
+    return STATUS_SUCCESS;
+}
+
+int close_logs_file(logs_file_t *logs_file) {
     if (fclose(logs_file->file) == EOF) {
         fprintf(stderr, "Error closing logs file\n");
         return STATUS_ERROR;
@@ -131,6 +162,30 @@ int close_logs_file(logs_file_t *logs_file){
     }
 
     return STATUS_SUCCESS;
+}
+
+int _close_n_logs_files(logs_file_t logs_files[], uint32_t n) {
+    int error_flag = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        if (logs_files[i].file != NULL) {
+            if (fclose(logs_files[i].file) == EOF) {
+                fprintf(stderr, "Error closing logs file \"%s\" from sensor %d\n", logs_files[i].filename, i);
+                error_flag = 1;
+            }
+            logs_files[i].file = NULL;
+        }
+
+        if (logs_files[i].filename != NULL) {
+            free(logs_files[i].filename);
+            logs_files[i].filename = NULL;
+        }
+    }
+
+    return error_flag ? STATUS_ERROR : STATUS_SUCCESS;
+}
+
+int close_logs_files(logs_file_t logs_files[]){
+    return _close_n_logs_files(logs_files, NUMBER_OF_SENSORS);
 }
 
 int log_server_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
