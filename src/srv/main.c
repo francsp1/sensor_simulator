@@ -253,11 +253,11 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
 
-        if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
-            fprintf(stderr, "Could not log sensor data\n");
-            free(data);
-            continue;
-        }
+        // if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
+        //     fprintf(stderr, "Could not log sensor data\n");
+        //     free(data);
+        //     continue;
+        // }
         
         params->counter++;
         params->sum += get_float_value(data);

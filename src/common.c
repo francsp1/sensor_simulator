@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "common.h"
 
@@ -122,11 +123,21 @@ int open_logs_file(logs_file_t *logs_file, const char *filename){
 int open_logs_files(logs_file_t logs_files[]) {
     printf("Opening logs file...\n");
     
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
-        const char *format = "logs/sensor_%u_logs.txt";
-        int needed_size = snprintf(NULL, 0, format, i) + 1; // +1 for null terminator
+    const char *format = "logs/srv/sensor_%u_logs.txt";
+    int size = 0;
+    size_t needed_size = 0;
 
-        
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
+        size = snprintf(NULL, 0, format, i);
+
+        if (size <= 0) {
+            fprintf(stderr, "Error calculating size of logs file name of sensor %d\n", i);
+            _close_n_logs_files(logs_files, i);
+            return STATUS_ERROR;
+        }
+
+        needed_size = (size_t) (size + 1); // +1 for the null terminator
+
         logs_files[i].filename = (char *) calloc(needed_size, sizeof(char));
         if (logs_files[i].filename == NULL) {
             fprintf(stderr, "Error allocating memory for logs file name of sensor %d\n", i);
@@ -139,11 +150,11 @@ int open_logs_files(logs_file_t logs_files[]) {
         logs_files[i].file = fopen(logs_files[i].filename, "a");
         if (logs_files[i].file == NULL) {
             fprintf(stderr, "Error opening logs file \"%s\" from sensor %d\n", logs_files[i].filename, i);
+            _close_n_logs_files(logs_files, i);
             if (logs_files[i].filename != NULL){
                 free(logs_files[i].filename);
                 logs_files[i].filename = NULL;
             }
-            _close_n_logs_files(logs_files, i);
             return STATUS_ERROR;
         }
     }
