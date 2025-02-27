@@ -101,25 +101,6 @@ int join_threads(pthread_t *tids){
     return STATUS_SUCCESS;
 }
 
-int open_logs_file(logs_file_t *logs_file, const char *filename){
-    printf("Opening logs file...\n");
-    logs_file->file = fopen(filename, "a");
-    if (logs_file->file == NULL) {
-        fprintf(stderr, "Error opening logs file \"%s\"\n", filename);
-        return STATUS_ERROR;
-    }
-
-    if (pthread_mutex_init(&logs_file->mutex, NULL) != 0) {
-        fprintf(stderr, "Error initializing mutex for logs file\n");
-        fclose(logs_file->file);
-        return STATUS_ERROR;
-    }
-
-    printf("Logs file opened\n");
-
-    return STATUS_SUCCESS;
-}
-
 int _open_logs_files(logs_file_t logs_files[], const char *format) {
     printf("Opening logs file...\n");
     
@@ -167,20 +148,6 @@ int open_server_logs_files(logs_file_t logs_files[]){
 
 int open_client_logs_files(logs_file_t logs_files[]){
     return _open_logs_files(logs_files, "logs/cli/sensor_%u_client_logs.txt");
-}
-
-int close_logs_file(logs_file_t *logs_file) {
-    if (fclose(logs_file->file) == EOF) {
-        fprintf(stderr, "Error closing logs file\n");
-        return STATUS_ERROR;
-    }
-
-    if (pthread_mutex_destroy(&logs_file->mutex) != 0) {
-        fprintf(stderr, "Error destroying mutex for logs file\n");
-        return STATUS_ERROR;
-    }
-
-    return STATUS_SUCCESS;
 }
 
 int _close_n_logs_files(logs_file_t logs_files[], uint32_t n) {

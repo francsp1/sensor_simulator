@@ -128,31 +128,13 @@ int join_threads(pthread_t *tids);
 typedef struct {
     FILE *file;
     char *filename;
-    pthread_mutex_t mutex;
 } logs_file_t;
-
-/**
- * This function opens the logs file
- * @brief Open the logs file
- * @param server_logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @param filename Name of the file where the logs will be stored
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
- */
-int open_logs_file(logs_file_t *server_logs_file, const char *filename);
 
 int _open_logs_files(logs_file_t logs_files[], const char *format);
 
 int open_server_logs_files(logs_file_t logs_files[]); 
 
 int open_client_logs_files(logs_file_t logs_files[]);
-
-/**
- * This function closes the logs file
- * @brief Close the logs file
- * @param server_logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
- */
-int close_logs_file(logs_file_t *server_logs_file);
 
 int _close_n_logs_files(logs_file_t logs_files[], uint32_t n);
 
