@@ -120,10 +120,9 @@ int open_logs_file(logs_file_t *logs_file, const char *filename){
     return STATUS_SUCCESS;
 }
 
-int open_logs_files(logs_file_t logs_files[]) {
+int _open_logs_files(logs_file_t logs_files[], const char *format) {
     printf("Opening logs file...\n");
     
-    const char *format = "logs/srv/sensor_%u_logs.txt";
     int size = 0;
     size_t needed_size = 0;
 
@@ -160,6 +159,14 @@ int open_logs_files(logs_file_t logs_files[]) {
     }
 
     return STATUS_SUCCESS;
+}
+
+int open_server_logs_files(logs_file_t logs_files[]){
+    return _open_logs_files(logs_files, "logs/srv/sensor_%u_server_logs.txt");
+}
+
+int open_client_logs_files(logs_file_t logs_files[]){
+    return _open_logs_files(logs_files, "logs/cli/sensor_%u_client_logs.txt");
 }
 
 int close_logs_file(logs_file_t *logs_file) {
@@ -218,20 +225,8 @@ int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, u
         return STATUS_ERROR;
     }
 
-    if (pthread_mutex_lock(&(logs_file->mutex)) != 0){
-        fprintf(stderr, "Error locking logs file mutex\n");
-        free(time);
-        time = NULL;
-        return STATUS_ERROR;
-    }
     fprintf(logs_file->file, format, time, thread_id,sensor_data->hdr.sensor_id, get_float_value(sensor_data));
     fflush(logs_file->file);
-    if (pthread_mutex_unlock(&(logs_file->mutex)) != 0){
-        fprintf(stderr, "Error unlocking logs file mutex\n");
-        free(time);
-        time = NULL;
-        return STATUS_ERROR;
-    }
 
     free(time);
     time = NULL;

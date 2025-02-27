@@ -76,17 +76,17 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    logs_file_t server_logs_file;
-    memset(&server_logs_file, 0, sizeof(logs_file_t));
-    if (open_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
-        fprintf(stderr, "Could not open the server logs file\n");
-        close_socket(server_socket);
-        exit(EXIT_FAILURE);
-    }
+    // logs_file_t server_logs_file;
+    // memset(&server_logs_file, 0, sizeof(logs_file_t));
+    // if (open_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
+    //     fprintf(stderr, "Could not open the server logs file\n");
+    //     close_socket(server_socket);
+    //     exit(EXIT_FAILURE);
+    // }
 
     logs_file_t server_logs_files[NUMBER_OF_SENSORS];
     memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
-    if (open_logs_files(server_logs_files) == STATUS_ERROR) {
+    if (open_server_logs_files(server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not open all the server logs files\n");
         close_socket(server_socket);
         exit(EXIT_FAILURE);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
         close_socket(server_socket);
-        close_logs_file(&server_logs_file);
+        close_logs_files(server_logs_files);
         exit(EXIT_FAILURE);
     }
 
@@ -106,10 +106,10 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, &server_logs_file, queues, handle_client) == STATUS_ERROR) {
+    if (init_server_threads(tids, thread_params, server_socket, server_logs_files, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(server_socket);
-        close_logs_file(&server_logs_file);
+        close_logs_files(server_logs_files);
         destroy_queues(queues);
         p_queues = NULL;
         exit(EXIT_FAILURE);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     if (join_threads(tids) == STATUS_ERROR) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(server_socket);
-        close_logs_file(&server_logs_file);
+        close_logs_files(server_logs_files);
         destroy_queues(queues);
         p_queues = NULL;
         exit(EXIT_FAILURE);
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (close_logs_file(&server_logs_file) == STATUS_ERROR) {
+    if (close_logs_files(server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the server logs file\n");
         exit(EXIT_FAILURE);
     }
@@ -253,11 +253,11 @@ void *handle_client(void *arg){ //TODO
             continue;
         }
 
-        // if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
-        //     fprintf(stderr, "Could not log sensor data\n");
-        //     free(data);
-        //     continue;
-        // }
+        if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
+            fprintf(stderr, "Could not log sensor data\n");
+            free(data);
+            continue;
+        }
         
         params->counter++;
         params->sum += get_float_value(data);

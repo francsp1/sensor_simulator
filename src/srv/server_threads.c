@@ -18,7 +18,7 @@
 
 #include "common.h"
 
-int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, logs_file_t *server_logs_file, queue_thread_safe_t **queues, void *(*handle_client) (void *)) {
+int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, logs_file_t *server_logs_files, queue_thread_safe_t **queues, void *(*handle_client) (void *)) {
     printf("Initializing threads...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
@@ -27,7 +27,7 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
         thread_params[i].counter = 0;
         thread_params[i].sum = 0;
         thread_params[i].queue = queues[i];
-        thread_params[i].server_logs_file = server_logs_file;
+        thread_params[i].server_logs_file = &server_logs_files[i];
     }
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){

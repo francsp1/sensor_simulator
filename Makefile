@@ -30,6 +30,9 @@ run: clean default
 	LD_LIBRARY_PATH=./src/lib ./$(TARGET_SRV) --port 8080 
 #./$(TARGET_CLI) --ip 127.0.0.1 --port 8080 
 
+rmlogs:
+	rm -f logs/srv/*
+	rm -f logs/cli/*
 
 default: clean $(TARGET_SRV) $(TARGET_CLI)
 

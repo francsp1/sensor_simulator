@@ -118,10 +118,6 @@ int get_current_time(char **buffer);
  */
 int join_threads(pthread_t *tids);
 
-
-#define SERVER_LOGS_FILE "server_logs.txt" //name of the file where the server logs will be stored
-#define CLIENT_LOGS_FILE "client_logs.txt" //name of the file where the client logs will be stored
-
 /**
  * This structure defines the file where the logs will be stored
  * @brief File where the logs will be stored
@@ -144,7 +140,11 @@ typedef struct {
  */
 int open_logs_file(logs_file_t *server_logs_file, const char *filename);
 
-int open_logs_files(logs_file_t logs_files[]);
+int _open_logs_files(logs_file_t logs_files[], const char *format);
+
+int open_server_logs_files(logs_file_t logs_files[]); 
+
+int open_client_logs_files(logs_file_t logs_files[]);
 
 /**
  * This function closes the logs file

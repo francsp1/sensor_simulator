@@ -58,10 +58,18 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    logs_file_t client_logs_file;
-    memset(&client_logs_file, 0, sizeof(logs_file_t));
-    if (open_logs_file(&client_logs_file, CLIENT_LOGS_FILE) == STATUS_ERROR) {
-        fprintf(stderr, "Could not open the server logs file\n");
+    // logs_file_t client_logs_file;
+    // memset(&client_logs_file, 0, sizeof(logs_file_t));
+    // if (open_logs_file(&client_logs_file, CLIENT_LOGS_FILE) == STATUS_ERROR) {
+    //     fprintf(stderr, "Could not open the server logs file\n");
+    //     close_socket(client_socket);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    logs_file_t client_logs_files[NUMBER_OF_SENSORS];
+    memset(client_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
+    if (open_client_logs_files(client_logs_files) == STATUS_ERROR) {
+        fprintf(stderr, "Could not open all the client logs files\n");
         close_socket(client_socket);
         exit(EXIT_FAILURE);
     }
@@ -70,17 +78,17 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     client_thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(client_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, &client_logs_file, packets_per_sensor, handle_server) == STATUS_ERROR) {
+    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, client_logs_files, packets_per_sensor, handle_server) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(client_socket);
-        close_logs_file(&client_logs_file);
+        close_logs_files(client_logs_files);
         exit(EXIT_FAILURE);
     }
 
     if (join_threads(tids) == STATUS_ERROR) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(client_socket);
-        close_logs_file(&client_logs_file);
+        close_logs_files(client_logs_files);
         exit(EXIT_FAILURE);
     }
 
@@ -89,7 +97,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (close_logs_file(&client_logs_file) == STATUS_ERROR) {
+    if (close_logs_files(client_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Error closing logs file\n");
         exit(EXIT_FAILURE);
     }
