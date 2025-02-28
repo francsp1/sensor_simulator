@@ -73,7 +73,7 @@ int validate_port(int server_port);
 
 /**
  * This function disables the buffering of the stdout and stderr streams
- * @brief Enable buffering
+ * @brief Disable the buffering of the stdout and stderr streams
  */
 void disable_buffering(void);
 

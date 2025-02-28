@@ -58,14 +58,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // logs_file_t client_logs_file;
-    // memset(&client_logs_file, 0, sizeof(logs_file_t));
-    // if (open_logs_file(&client_logs_file, CLIENT_LOGS_FILE) == STATUS_ERROR) {
-    //     fprintf(stderr, "Could not open the server logs file\n");
-    //     close_socket(client_socket);
-    //     exit(EXIT_FAILURE);
-    // }
-
     logs_file_t client_logs_files[NUMBER_OF_SENSORS];
     memset(client_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
     if (open_client_logs_files(client_logs_files) == STATUS_ERROR) {
