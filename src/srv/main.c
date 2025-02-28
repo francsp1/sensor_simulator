@@ -84,6 +84,8 @@ int main(int argc, char *argv[]) {
     //     exit(EXIT_FAILURE);
     // }
 
+    int log_files_flag = args.log_files_flag;
+
     logs_file_t server_logs_files[NUMBER_OF_SENSORS];
     memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
     if (open_server_logs_files(server_logs_files) == STATUS_ERROR) {
