@@ -22,7 +22,7 @@
  * @param server_endpoint Pointer to the server endpoint (struct sockaddr_in) to send the data to
  * @param id Thread/Sensor ID
  * @param client_socket Client socket to send the data
- * @param client_logs_file Pointer to the logs_file_t structure where the logs will be stored. logs_file_t contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param client_logs_file Pointer to the logs_file_t stucture. The structure contains the the pointer (FILE *)for the corresponding logs file of the sensor and a pointer to a string that contains the file name (Ex.: the thread with the ID 0 will write the logs to a fila named "sensor_0_client_logs.txt")
  * @param packets_per_sensor Number of packets to be sent by each sensor
  */
 typedef struct client_thread_params {
@@ -40,7 +40,7 @@ typedef struct client_thread_params {
  * @param thread_params Pointer to the array of client_thread_params_t structures where the thread parameters will be stored
  * @param client_socket Client socket to send the data
  * @param server_endpoint Pointer to the server endpoint (struct sockaddr_in) to send the data to
- * @param client_logs_file Pointer to the logs_file_t structure where the logs will be stored. logs_file_t contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param client_logs_file Pointer to the logs_file_t stucture. The structure contains the the pointer (FILE *)for the corresponding logs file of the sensor and a pointer to a string that contains the file name (Ex.: the thread with the ID 0 will write the logs to a fila named "sensor_0_client_logs.txt")
  * @param packets_per_sensor Number of packets to be sent by each sensor
  * @param handle_client Pointer to the function that will be executed by each thread
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure

@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 
     int packets_per_sensor = args.packets_per_sensor_arg;
     if (packets_per_sensor <= 0) {
-        fprintf(stderr, "Error: --packets_per_sensor (-s) must receive a value greater than zero\n");
+        fprintf(stderr, "Error: --packets-per-sensor (-s) must receive a value greater than zero\n");
         exit(EXIT_FAILURE);
     }
 

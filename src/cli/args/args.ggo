@@ -11,7 +11,7 @@ versiontext "Sensor simutaion client"
 #option "folder"              f  "folder" string typestr="dirname" required
 option "ip"                  i  "ip"                 string    required
 option "port"                p  "port"               int       required
-option "packets_per_sensor"  s  "packets_per_sensor" int       optional  default="100"
+option "packets_per_sensor"  s  "packets-per-sensor" int       optional  default="100"
 
 # Optional
 #option "num" n "number" int optional

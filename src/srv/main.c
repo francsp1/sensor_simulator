@@ -76,14 +76,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // logs_file_t server_logs_file;
-    // memset(&server_logs_file, 0, sizeof(logs_file_t));
-    // if (open_logs_file(&server_logs_file, SERVER_LOGS_FILE) == STATUS_ERROR) {
-    //     fprintf(stderr, "Could not open the server logs file\n");
-    //     close_socket(server_socket);
-    //     exit(EXIT_FAILURE);
-    // }
-
     int log_files_flag = args.log_files_flag;
 
     logs_file_t server_logs_files[NUMBER_OF_SENSORS];

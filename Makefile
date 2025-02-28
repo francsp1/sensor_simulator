@@ -63,7 +63,7 @@ obj/cli/client_threads.o: src/cli/client_threads.c inc/cli/client_threads.h inc/
 # Common
 obj/common.o: src/common.c inc/common.h
 
-# Generates command line arguments code from gengetopt .ggo configuration file
+# Generates command line arguments code from gengetopt .ggo configuration file (gengetopt)
 # Server
 src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h: src/srv/args/$(PROGRAM_OPT).ggo
 	gengetopt --input=src/srv/args/$(PROGRAM_OPT).ggo --file-name=$(PROGRAM_OPT) --header-output-dir=inc/srv/args --src-output-dir=src/srv/args
