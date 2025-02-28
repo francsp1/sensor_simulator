@@ -22,7 +22,7 @@
 
 #define NUMBER_OF_SENSORS ( (uint32_t) (5) )
 
-#define SENSOR_RATE (10) // Define the desired frequency in Hz
+#define SENSOR_RATE (10000) // Define the desired frequency in Hz
 #define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
 
 #define TIME_BUFFER_SIZE (20) // Size of the buffer to store the time string
@@ -120,9 +120,9 @@ int join_threads(pthread_t *tids);
 
 /**
  * This structure defines the file where the logs will be stored
- * @brief File where the logs will be stored
+ * @brief File where the logs will be stored. For example: server thread with ID 0 will write the logs to a file named "sensor_0_server_logs.txt" 
  * @param file Pointer to the file (FILE *)
- * @param mutex Mutex to protect the file
+ * @param filename Pointer to the string that contains the file name
  * @struct logs_file_t
  */
 typedef struct {
@@ -130,15 +130,15 @@ typedef struct {
     char *filename;
 } logs_file_t;
 
-int _open_logs_files(logs_file_t logs_files[], const char *format);
+int _open_logs_files(int logs_files_flag, logs_file_t logs_file[], const char *format);
 
-int open_server_logs_files(logs_file_t logs_files[]); 
+int open_server_logs_files(int logs_files_flag, logs_file_t logs_file[]); 
 
-int open_client_logs_files(logs_file_t logs_files[]);
+int open_client_logs_files(int logs_files_flag, logs_file_t logs_file[]);
 
-int _close_n_logs_files(logs_file_t logs_files[], uint32_t n);
+int _close_n_logs_files(int logs_files_flag, logs_file_t logs_file[], uint32_t n);
 
-int close_logs_files(logs_file_t logs_files[]);
+int close_logs_files(int logs_files_flag, logs_file_t logs_file[]);
 
 /**
  * This function logs the sensor data received by the server

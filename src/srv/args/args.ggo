@@ -9,7 +9,7 @@ versiontext "Sensor server simulator"
 #----------------------------
 # Mandatory option
 option "port"       p   "Listen port"                  int       typestr="PORT_NUMBER"  required
-option "log-files"  l   "Log received data in files"   flag      off
+option "logs-files"  l   "Log received data in files"   flag      off
 
 
 

@@ -27,6 +27,7 @@
  * @param counter Counter of the number of packets received
  * @param sum Sum of the values of the packets received
  * @param queue Pointer to the queue where the packets will be stored
+ * @param logs_files_flag Flag to indicate if the received data should be logged to a file
  * @param server_logs_file Pointer to the logs_file_t stucture. The structure contains the the pointer (FILE *) for the corresponding logs file of the sensor and a pointer to a string that contains the file name (Ex.: the thread with the ID 0 will write the logs to a file named "sensor_0_server_logs.txt")
  * @struct server_thread_params_t
  */
@@ -36,6 +37,7 @@ typedef struct server_thread_params {
     uint32_t counter;
     float sum;
     queue_thread_safe_t * queue;
+    int logs_files_flag;
     logs_file_t *server_logs_file;
 }server_thread_params_t;
 
@@ -45,12 +47,13 @@ typedef struct server_thread_params {
  * @param tids Pointer to the array of pthread_t structures where the thread IDs will be stored
  * @param thread_params Pointer to the array of server_thread_params_t structures where the thread parameters will be stored
  * @param server_socket Server socket file descriptor
+ * @param logs_files_flag Flag to indicate if the received data should be logged to a file
  * @param server_logs_file Pointer to the logs_file_t stucture. The structure contains the the pointer (FILE *) for the corresponding logs file of the sensor and a pointer to a string that contains the file name (Ex.: the thread with the ID 0 will write the logs to a file named "sensor_0_server_logs.txt")
  * @param queues Pointer to the array of queue_thread_safe_t structures where the queues will be stored
  * @param handle_client Pointer to the function that will be executed by each thread
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, logs_file_t *server_logs_file, queue_thread_safe_t **queues, void *(*handle_client) (void *));
+int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, void *(*handle_client) (void *));
 
 #endif  // _THREADS_H
 
