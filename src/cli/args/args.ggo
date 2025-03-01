@@ -9,13 +9,7 @@ versiontext "Sensor simutaion client"
 #----------------------------
 # Mandatory option
 #option "folder"              f  "folder" string typestr="dirname" required
-option "ip"                  i  "ip"                 string    required
-option "port"                p  "port"               int       required
-option "packets_per_sensor"  s  "packets-per-sensor" int       optional  default="100"
-
-# Optional
-#option "num" n "number" int optional
-
-#
-# NOTE: support for this file needs to be enabled in 'makefile'
-#
+option "ip"                  i  "ip"                           string    required
+option "port"                p  "port"                         int       required
+option "packets_per_sensor"  s  "packets-per-sensor"           int       optional  default="100"
+option "logs-files"          l  "Log received data in files"   flag      off
