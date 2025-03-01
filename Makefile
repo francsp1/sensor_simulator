@@ -11,7 +11,7 @@ CLI_INC_DIRS =-Iinc -Iinc/lib -Iinc/cli -Iinc/cli/args
 SRV_LIBS =-pthread -lqueue -Lsrc/lib  #-lm
 CLI_LIBS =-pthread
 
-CFLAGS =-ggdb -std=c11 -Wall -Wextra -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
+CFLAGS =-ggdb -std=c11 -Wall -Wextra -fno-short-enums -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
 
 SRC_SRV =$(wildcard src/srv/*.c)
 OBJ_SRV   =$(SRC_SRV:src/srv/%.c=obj/srv/%.o)
@@ -25,16 +25,17 @@ CLIENT_OBJECTS =$(OBJ_CLI) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
 
 all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $(TARGET_CLI)
 
-run: clean default
-	echo "-------- Running server --------"
+run: clean rmlogs default
+	./$(TARGET_SRV) --port 8080 
+
+runld: clean rmlogs default
 	LD_LIBRARY_PATH=./src/lib ./$(TARGET_SRV) --port 8080 
-#./$(TARGET_CLI) --ip 127.0.0.1 --port 8080 
 
 rmlogs:
 	rm -f logs/srv/*
 	rm -f logs/cli/*
 
-default: clean $(TARGET_SRV) $(TARGET_CLI)
+default: $(TARGET_SRV) $(TARGET_CLI)
 
 clean:
 	rm -f inc/srv/args/$(PROGRAM_OPT).h 

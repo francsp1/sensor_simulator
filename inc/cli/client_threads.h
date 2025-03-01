@@ -29,6 +29,7 @@ typedef struct client_thread_params {
     struct sockaddr_in *server_endpoint;
 	uint32_t id;
     int client_socket;
+    int logs_files_flag;
     logs_file_t *client_logs_file;
     int packets_per_sensor;
 }client_thread_params_t;
@@ -45,7 +46,7 @@ typedef struct client_thread_params {
  * @param handle_client Pointer to the function that will be executed by each thread
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, int client_socket, struct sockaddr_in *server_endpoint, logs_file_t  *client_logs_file, int packets_per_sensor, void *(*handle_client) (void *));
+int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, int client_socket, struct sockaddr_in *server_endpoint, int logs_files_flag, logs_file_t  *client_logs_files, int packets_per_thread,void *(*handle_client) (void *));
 
 #endif // _CLIENT_THREADS_H
 

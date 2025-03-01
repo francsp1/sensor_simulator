@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     client_thread_params_t thread_params[NUMBER_OF_SENSORS];
     memset(thread_params, 0, sizeof(client_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, client_logs_files, packets_per_sensor, handle_server) == STATUS_ERROR) {
+    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, logs_files_flag, client_logs_files, packets_per_sensor, handle_server) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(client_socket);
         close_logs_files(logs_files_flag, client_logs_files);
@@ -137,11 +137,13 @@ void *handle_server(void *arg) {
             continue;
         }
 
-        if (log_client_sensor_data(client_logs_file, &data, id) == STATUS_ERROR) {
+        if(params->logs_files_flag){
+            if (log_client_sensor_data(client_logs_file, &data, id) == STATUS_ERROR) {
             fprintf(stderr, "Could not log sensor data\n");
             continue;
+            }
         }
-
+        
         nanosleep(&delay, NULL);
 
         packets_per_thread--;

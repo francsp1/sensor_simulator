@@ -33,9 +33,10 @@
  * @param PROTO_SENSOR_DATA Exchange sensor data between the server and the clients
  * @enum proto_type_e
  */
-typedef enum {
-	PROTO_SENSOR_DATA,
+typedef enum  {
+    PROTO_SENSOR_DATA,
 } proto_type_e;
+_Static_assert(sizeof(proto_type_e) == 4, "proto_type_e must be 4 bytes!"); // Ensures 4-byte storage (maybe this is necessary because when I am deserializing proto_type_e I am using ntohl. Also I am compiling the code with gcc flag -fno-short-enums)
 
 /**
  * This structure defines the header of the messages that will be exchanged between the server and the clients

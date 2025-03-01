@@ -39,6 +39,9 @@ queue_thread_safe_t **p_queues = NULL;
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
 
+    //For testing, print sizeof proto_type_e
+    //printf("Size of proto_type_e: %ld\n", sizeof(proto_type_e));
+
     // Disable buffering for stdout and stderr
     disable_buffering();
 
@@ -111,13 +114,12 @@ int main(int argc, char *argv[]) {
     printf("Server listening for UDP messages on port %d\n", server_port);    
 
     uint8_t buffer[MAX_BUFFER_SIZE];
+    memset(buffer, 0, sizeof(buffer));
 
     //queue_thread_safe_t *queue_zero = queues[0];
 
     while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
-
-        memset(buffer,0,sizeof(buffer));
-
+        
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
             if (errno == EINTR) { // Interrupted by a signal 
                 break;
@@ -157,6 +159,8 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
+
+        memset(buffer,0,sizeof(buffer));
     }
 
     printf("\nWaiting for threads to empty queues...\n");

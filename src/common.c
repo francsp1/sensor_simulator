@@ -44,6 +44,7 @@ float get_float_value(proto_sensor_data_t *data){
 
 int generate_random_float(float *p_float_out) {
     if (p_float_out == NULL) {
+        fprintf(stderr, "Error generating random float: pointer can not be null\n");
         return STATUS_ERROR;
     }
 
@@ -101,10 +102,20 @@ int join_threads(pthread_t *tids){
     return STATUS_SUCCESS;
 }
 
-int _open_logs_files(int logs_files_flag,logs_file_t logs_file[], const char *format) {
+int _open_logs_files(int logs_files_flag, logs_file_t logs_file[], const char *format) {
 
     if (logs_files_flag == 0) {
         return STATUS_SUCCESS;
+    }
+
+    if (logs_file == NULL) {
+        fprintf(stderr, "Error opening logs file: logs_file can not be null\n");
+        return STATUS_ERROR;
+    }
+
+    if (format == NULL) {
+        fprintf(stderr, "Error opening logs file: format can not be null\n");
+        return STATUS_ERROR;
     }
 
     printf("Opening logs file...\n");
@@ -161,6 +172,11 @@ int _close_n_logs_files(int logs_files_flag, logs_file_t logs_file[], uint32_t n
         return STATUS_SUCCESS;
     }
 
+    if (logs_file == NULL) {
+        fprintf(stderr, "Error closing logs file: logs_file can not be null\n");
+        return STATUS_ERROR;
+    }
+
     int error_flag = 0;
     for (uint32_t i = 0; i < n; i++) {
         if (logs_file[i].file != NULL) {
@@ -195,6 +211,21 @@ int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_d
 
 int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
     //printf("Logging sensor data\n");
+    
+    if (logs_file == NULL) {
+        fprintf(stderr, "Error logging sensor data: logs_file can not be null\n");
+        return STATUS_ERROR;
+    }
+
+    if (sensor_data == NULL) {
+        fprintf(stderr, "Error logging sensor data: sensor_data can not be null\n");
+        return STATUS_ERROR;
+    }
+
+    if (format == NULL) {
+        fprintf(stderr, "Error logging sensor data: format can not be null\n");
+        return STATUS_ERROR;
+    }
 
     char *time = NULL;
     if (get_current_time(&time) == STATUS_ERROR) {
