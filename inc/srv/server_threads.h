@@ -39,9 +39,6 @@ typedef struct server_thread_params {
     queue_thread_safe_t * queue;
     int logs_files_flag;
     logs_file_t *server_logs_file;
-    pthread_mutex_t *lock;
-    pthread_cond_t *cond;
-    int *ready;
 } server_thread_params_t;
 
 /**
