@@ -98,11 +98,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    pthread_t tids[NUMBER_OF_SENSORS];
-    memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
-    server_thread_params_t thread_params[NUMBER_OF_SENSORS];
-    memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag , server_logs_files, queues, handle_client) == STATUS_ERROR) {
+    pthread_t tids[NUMBER_OF_SENSORS]; memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
+    server_thread_params_t thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
+    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
@@ -110,14 +108,11 @@ int main(int argc, char *argv[]) {
         p_queues = NULL;
         exit(EXIT_FAILURE);
     }
-    
-    printf("Server listening for UDP messages on port %d\n", server_port);    
+
+    printf("Server listening for UDP messages on port %d\n", server_port);   
 
     uint8_t buffer[MAX_BUFFER_SIZE];
     memset(buffer, 0, sizeof(buffer));
-
-    //queue_thread_safe_t *queue_zero = queues[0];
-
     while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
@@ -177,7 +172,7 @@ int main(int argc, char *argv[]) {
 
     uint32_t total_messages = 0;
     float total_sum = 0;
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
         uint32_t counter = thread_params[i].counter;
         uint32_t tid = thread_params[i].id;
         printf("Thread %d received %d messages from sensor %d\n", tid, counter, i);
@@ -266,6 +261,27 @@ void *handle_client(void *arg){
     }
 
     return NULL;
+}
+
+void wait_until_ready(int tid, pthread_mutex_t *lock, pthread_cond_t *cond, int *ready) {
+    pthread_mutex_lock(lock);
+    
+    printf("Thread %d is checking if everything is ready...\n", tid);
+
+    while (!*ready) {  // Wait until ready is set
+        pthread_cond_wait(cond, lock);
+    }
+
+    printf("Everything is ready! Thread %d will start working\n", tid);
+    
+    pthread_mutex_unlock(lock);
+}
+
+void wake_threads(pthread_mutex_t *lock, pthread_cond_t *cond, int *ready) {
+    pthread_mutex_lock(lock);
+    *ready = 1;
+    pthread_cond_broadcast(cond);
+    pthread_mutex_unlock(lock);
 }
 
 int init_signal_handlers(struct sigaction *sa) {

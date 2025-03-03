@@ -39,7 +39,10 @@ typedef struct server_thread_params {
     queue_thread_safe_t * queue;
     int logs_files_flag;
     logs_file_t *server_logs_file;
-}server_thread_params_t;
+    pthread_mutex_t *lock;
+    pthread_cond_t *cond;
+    int *ready;
+} server_thread_params_t;
 
 /**
  * This function initializes the server threads. The number of threads is equal to the number of sensors (NUMBER_OF_SENSORS macro in common.h)

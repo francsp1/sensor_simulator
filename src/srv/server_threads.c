@@ -38,7 +38,7 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
         }
     }
 
-    printf("Threads initialized\n");
+    printf("Threads initialized...\n");
     return STATUS_SUCCESS;
 }
 

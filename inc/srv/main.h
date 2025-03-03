@@ -19,6 +19,10 @@
  */ 
 void *handle_client(void *arg);
 
+void wait_until_ready(int tid, pthread_mutex_t *lock, pthread_cond_t *cond, int *ready);
+
+void wake_threads(pthread_mutex_t *lock, pthread_cond_t *cond, int *ready);
+
 /**
  * This function initializes the signal handlers for the server (SIGINT and SIGTERM)
  * @brief Initialize the signal handlers

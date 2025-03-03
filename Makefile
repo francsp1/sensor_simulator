@@ -84,18 +84,18 @@ obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROG
 obj/common.o: src/common.c inc/common.h
 	$(COMPILER) $(CFLAGS) -c $< -o $@ -Iinc
 
-# Compile Server
-$(TARGET_SRV): $(SERVER_OBJECTS) 
-	$(COMPILER) -o $@ $^ $(SRV_LIBS) 
-
 # Generate .o files from every .c file in src/srv
 $(OBJ_SRV): obj/srv/%.o: src/srv/%.c
 	$(COMPILER) $(CFLAGS) -c $< -o $@ $(SRV_INC_DIRS)
 
-# Compile Client
-$(TARGET_CLI): $(CLIENT_OBJECTS) 
-	$(COMPILER) -o $@ $^ $(CLI_LIBS)
+# Compile Server
+$(TARGET_SRV): $(SERVER_OBJECTS) 
+	$(COMPILER) -o $@ $^ $(SRV_LIBS) 
 
 # Generate .o files from every .c file in src/cli
 $(OBJ_CLI): obj/cli/%.o: src/cli/%.c
 	$(COMPILER) $(CFLAGS) -c $< -o $@ $(CLI_INC_DIRS)
+
+# Compile Client
+$(TARGET_CLI): $(CLIENT_OBJECTS) 
+	$(COMPILER) -o $@ $^ $(CLI_LIBS)
