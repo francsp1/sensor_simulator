@@ -43,8 +43,7 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     }
 
     // Set up the server address struct
-    struct sockaddr_in server_address;
-    memset(&server_address, 0, sizeof(struct sockaddr_in));  	
+    struct sockaddr_in server_address; memset(&server_address, 0, sizeof(struct sockaddr_in));  	
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY); // All network interfaces
     server_address.sin_port = htons(server_port); // Server Port
@@ -64,13 +63,12 @@ int init_server_socket(int server_port, int *p_server_socket_out){
 
 int receive_from_socket(int server_socket, uint8_t *buffer){
     socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
-    struct sockaddr_in client_endpoint;
-    memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
+    struct sockaddr_in client_endpoint; memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
     ssize_t read_bytes;
 
     //printf("Waiting for a client message...\n");
 
-    if ((read_bytes = recvfrom(server_socket, buffer, (sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1 , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
+    if ((read_bytes = recvfrom(server_socket, buffer, ((sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1) , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
         if (errno == EINTR) { // Interrupted by a signal 
             fprintf(stderr, "recvfrom interrupted by a signal\n");
             return STATUS_ERROR;

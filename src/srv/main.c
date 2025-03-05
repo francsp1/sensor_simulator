@@ -66,8 +66,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction sa; 
-    memset(&sa, 0, sizeof(struct sigaction));
+    struct sigaction sa; memset(&sa, 0, sizeof(struct sigaction));
     if (init_signal_handlers(&sa) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize signal handlers\n");
         exit(EXIT_FAILURE);
@@ -80,17 +79,15 @@ int main(int argc, char *argv[]) {
     }
 
     int logs_files_flag = args.logs_files_flag;
-    logs_file_t server_logs_files[NUMBER_OF_SENSORS];
-    memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
+    logs_file_t server_logs_files[NUMBER_OF_SENSORS]; memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
     if (open_server_logs_files(logs_files_flag, server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not open all the server logs files\n");
         close_socket(server_socket);
         exit(EXIT_FAILURE);
     }
 
-    queue_thread_safe_t *queues[NUMBER_OF_SENSORS];
+    queue_thread_safe_t *queues[NUMBER_OF_SENSORS]; memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
     p_queues = queues;
-    memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
         close_socket(server_socket);
@@ -111,8 +108,7 @@ int main(int argc, char *argv[]) {
 
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
-    uint8_t buffer[MAX_BUFFER_SIZE];
-    memset(buffer, 0, sizeof(buffer));
+    uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
     while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {

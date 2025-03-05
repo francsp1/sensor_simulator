@@ -32,8 +32,7 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
     }
 		
 
-	struct timeval timeout;
-    memset(&timeout, 0, sizeof(timeout));
+	struct timeval timeout; memset(&timeout, 0, sizeof(timeout));
 	timeout.tv_sec = 10; //seconds
 	timeout.tv_usec = 0; //mili-seconds
 	int setsock_ret = setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
@@ -43,8 +42,7 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
         return STATUS_ERROR;
     }
 
-	struct sockaddr_in server_endpoint;
-	memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
+	struct sockaddr_in server_endpoint; memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
 	server_endpoint.sin_family = AF_INET;
     int aux = inet_pton(AF_INET, ip, &server_endpoint.sin_addr.s_addr);
     if (aux == 0) {
