@@ -259,12 +259,12 @@ void *handle_client(void *arg){
     return NULL;
 }
 
-void wait_until_ready(int tid, pthread_mutex_t *lock, pthread_cond_t *cond, int *ready) {
+void wait_until_ready(int tid, pthread_mutex_t *lock, pthread_cond_t *cond, int *p_ready) {
     pthread_mutex_lock(lock);
     
     printf("Thread %d is checking if everything is ready...\n", tid);
 
-    while (!*ready) {  // Wait until ready is set
+    while (!(*p_ready)) {  // Wait until ready is set
         pthread_cond_wait(cond, lock);
     }
 
@@ -273,9 +273,9 @@ void wait_until_ready(int tid, pthread_mutex_t *lock, pthread_cond_t *cond, int 
     pthread_mutex_unlock(lock);
 }
 
-void wake_threads(pthread_mutex_t *lock, pthread_cond_t *cond, int *ready) {
+void wake_threads(pthread_mutex_t *lock, pthread_cond_t *cond, int *p_ready) {
     pthread_mutex_lock(lock);
-    *ready = 1;
+    *p_ready = 1;
     pthread_cond_broadcast(cond);
     pthread_mutex_unlock(lock);
 }
