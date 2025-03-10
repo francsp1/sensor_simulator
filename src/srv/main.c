@@ -21,6 +21,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <execinfo.h>
 
 #include "../inc/srv/main.h"
 #include "common.h"
@@ -112,8 +113,11 @@ int main(int argc, char *argv[]) {
     while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
-            if (errno == EINTR) { // Interrupted by a signal 
-                break;
+            if (errno == EINTR) { // Interrupted by a signal
+                if (!term_flag) {
+                    fprintf(stderr, "Server received a termination signal\n");
+                    break;
+                }
             }
             fprintf(stderr, "Could not read data from the socket\n");
             continue;
@@ -202,8 +206,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //check 
-
     destroy_queues(queues);
     p_queues = NULL;
 
@@ -215,6 +217,12 @@ int main(int argc, char *argv[]) {
 }
 
 void *handle_client(void *arg){ 
+    // Block SIGINT in the worker thread
+    sigset_t mask; memset(&mask, 0, sizeof(sigset_t));
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &mask, NULL);
+
     server_thread_params_t *params = (server_thread_params_t *) arg;
     //printf("Thread %d is waiting\n", params->id);
     
@@ -225,21 +233,23 @@ void *handle_client(void *arg){
 
     proto_sensor_data_t *data = NULL;
 
-    while (term_flag || queue_get_number_of_elements_thread_safe(queue) > 0) {
+    while (1) {
+        pthread_mutex_lock(&queue->mutex);  // Lock before checking queue size
 
-        /*
-        if (queue_get_number_of_elements_thread_safe(queue) == 0) {
-            fprintf(stderr, "No data in the queue %d\n", id);
+        uint32_t number_of_elements = ucdlwb_get_number_of_elements(queue->elements);
+    
+        if (!term_flag && number_of_elements <= 0) {
+            pthread_mutex_unlock(&queue->mutex);
+            break;  // Exit when queue is empty and termination flag is false
+        }
+    
+        data = queue_remove_thread_safe_with_condition_no_lock(queue, &term_flag); // Remove element while holding lock
+        pthread_mutex_unlock(&queue->mutex);  // Unlock after removing data
+
+        if (data == NULL) {
             continue;
         }
-        */
-
-        data = queue_remove_thread_safe_with_condition(queue, &term_flag);
-        if (data == NULL ) {
-            fprintf(stderr, "Could not remove data from the queue: No data in the queue %d\n", id);
-            continue;
-        }
-
+    
         if (params->logs_files_flag) {
             if (log_server_sensor_data(server_logs_file, data, id) == STATUS_ERROR) {
                 fprintf(stderr, "Could not log sensor data\n");
@@ -248,14 +258,12 @@ void *handle_client(void *arg){
                 continue;
             }
         }
-        
+    
         (params->counter)++;
         (params->sum) += get_float_value(data);
-
-        //sleep(1);
-
-        free(data);  
-        data = NULL;      
+    
+        free(data);
+        data = NULL;   
     }
 
     return NULL;
@@ -291,7 +299,7 @@ int init_signal_handlers(struct sigaction *sa) {
     sa->sa_handler = signal_handler;
     sigemptyset(&sa->sa_mask);
     sa->sa_flags = 0;
-    // sa->sa_flags |= SA_RESTART; // Optionally, uncomment this line if you want to enable automatic restart of interrupted system calls
+    //sa->sa_flags |= SA_RESTART; // Optionally, uncomment this line if you want to enable automatic restart of interrupted system calls
 
     if (sigaction(SIGTERM, sa, NULL) == -1) {
         fprintf(stderr, "Initialization of SIGTERM failed\n");
@@ -308,9 +316,14 @@ int init_signal_handlers(struct sigaction *sa) {
 
 void signal_handler(int signum) {
     int aux;	
-	aux = errno;   
+	aux = errno;
+    void *array[10];
+    size_t size;
+    
+    size = backtrace(array, 10);
 	
 	printf("\nSignal Received (%d)\n", signum);	
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
 
     term_flag = 0;	
 
