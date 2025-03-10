@@ -33,7 +33,8 @@
 
 #include "queue_thread_safe.h"
 
-volatile sig_atomic_t term_flag = 1;
+volatile sig_atomic_t keep_running = 1;
+volatile sig_atomic_t main_thread_done = 0;
 
 queue_thread_safe_t **p_queues = NULL;
 
@@ -110,19 +111,19 @@ int main(int argc, char *argv[]) {
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
     uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
-    while (term_flag) { //Using the printf/fprintf to write to stdout/stderr is too slow 
+    while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
+            /*
             if (errno == EINTR) { // Interrupted by a signal
-                if (!term_flag) {
-                    fprintf(stderr, "Server received a termination signal\n");
-                    break;
-                }
+                fprintf(stderr, "recvfrom() interrupted by a signal\n");
+                continue;
             }
+            */
             fprintf(stderr, "Could not read data from the socket\n");
             continue;
         }
-
+        
         proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t )); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store sensor data\n");
@@ -142,7 +143,6 @@ int main(int argc, char *argv[]) {
             free(data);
             continue;
         }
-
         //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
@@ -154,8 +154,13 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
-
         memset(buffer,0,sizeof(buffer));
+    }
+
+    main_thread_done = 1;
+
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+        pthread_cond_broadcast(&(p_queues[i]->cond));
     }
 
     printf("\nWaiting for threads to empty queues...\n");
@@ -206,6 +211,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    /*
+    //print all queues before destroying them
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
+        printf("Queue %d\n", i);
+        print_queue(queues[i]);
+    }
+    */
+
     destroy_queues(queues);
     p_queues = NULL;
 
@@ -238,12 +251,12 @@ void *handle_client(void *arg){
 
         uint32_t number_of_elements = ucdlwb_get_number_of_elements(queue->elements);
     
-        if (!term_flag && number_of_elements <= 0) {
+        if (main_thread_done && number_of_elements == 0) {
             pthread_mutex_unlock(&queue->mutex);
             break;  // Exit when queue is empty and termination flag is false
         }
     
-        data = queue_remove_thread_safe_with_condition_no_lock(queue, &term_flag); // Remove element while holding lock
+        data = queue_remove_thread_safe_with_condition_no_lock(queue, &main_thread_done); // Remove element while holding lock
         pthread_mutex_unlock(&queue->mutex);  // Unlock after removing data
 
         if (data == NULL) {
@@ -325,11 +338,7 @@ void signal_handler(int signum) {
 	printf("\nSignal Received (%d)\n", signum);	
     backtrace_symbols_fd(array, size, STDERR_FILENO);
 
-    term_flag = 0;	
-
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        pthread_cond_broadcast(&(p_queues[i]->cond));
-    }
+    keep_running = 0;	
 	
 	errno = aux;   
 }

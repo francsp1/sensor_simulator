@@ -64,13 +64,15 @@ int init_server_socket(int server_port, int *p_server_socket_out){
 int receive_from_socket(int server_socket, uint8_t *buffer){
     socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
     struct sockaddr_in client_endpoint; memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
-    ssize_t read_bytes;
+    //ssize_t read_bytes;
 
     //printf("Waiting for a client message...\n");
 
-    if ((read_bytes = recvfrom(server_socket, buffer, ((sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1) , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length)) == -1) {
+    ssize_t bytes_read = recvfrom(server_socket, buffer, ((sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1) , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length);
+    //printf("Received %ld bytes from %s:%d\n", bytes_read, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
+    if (bytes_read == -1) {
         if (errno == EINTR) { // Interrupted by a signal 
-            fprintf(stderr, "recvfrom interrupted by a signal\n");
+            fprintf(stderr, "recvfrom() interrupted by a signal\n");
             return STATUS_ERROR;
         }
         fprintf(stderr, "Error receiving data from client\n");
