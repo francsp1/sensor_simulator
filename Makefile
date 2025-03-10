@@ -90,7 +90,7 @@ $(OBJ_SRV): obj/srv/%.o: src/srv/%.c
 
 # Compile Server
 $(TARGET_SRV): $(SERVER_OBJECTS) 
-	$(COMPILER) -o $@ $^ $(SRV_LIBS) 
+	$(COMPILER) -g -o $@ $^ $(SRV_LIBS) 
 
 # Generate .o files from every .c file in src/cli
 $(OBJ_CLI): obj/cli/%.o: src/cli/%.c

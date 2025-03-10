@@ -202,6 +202,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    //check 
+
     destroy_queues(queues);
     p_queues = NULL;
 
@@ -227,14 +229,14 @@ void *handle_client(void *arg){
 
         /*
         if (queue_get_number_of_elements_thread_safe(queue) == 0) {
-            //printf("No data in the queue %d\n", id);
+            fprintf(stderr, "No data in the queue %d\n", id);
             continue;
         }
         */
 
         data = queue_remove_thread_safe_with_condition(queue, &term_flag);
         if (data == NULL ) {
-            //printf("No data in the queue %d\n", id);
+            fprintf(stderr, "Could not remove data from the queue: No data in the queue %d\n", id);
             continue;
         }
 
