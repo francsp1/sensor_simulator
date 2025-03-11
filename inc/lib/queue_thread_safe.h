@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <signal.h>
+#include <stdatomic.h>
 
 #include "unordered_circular_doubly_list_with_base.h"
 
@@ -16,7 +17,7 @@ queue_thread_safe_t *queue_create_thread_safe();
 void queue_insert_thread_safe(void * element, queue_thread_safe_t *queue);
 void *queue_remove_thread_safe(queue_thread_safe_t *queue);
 void* queue_remove_thread_safe_with_condition(queue_thread_safe_t *queue, sig_atomic_t volatile *keep_running);
-void* queue_remove_thread_safe_with_condition_no_lock(queue_thread_safe_t *queue, volatile sig_atomic_t *condition);
+void* queue_remove_thread_safe_with_condition_no_lock(queue_thread_safe_t *queue, atomic_bool *condition);
 void *queue_query_first_thread_safe(queue_thread_safe_t *queue);
 void _free_queue_and_destroy_elements(queue_thread_safe_t **queue);
 void _destroy_thread_safe(queue_thread_safe_t **queue);

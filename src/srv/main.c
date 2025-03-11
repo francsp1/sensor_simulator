@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <execinfo.h>
+#include <stdatomic.h>
 
 #include "../inc/srv/main.h"
 #include "common.h"
@@ -34,12 +35,13 @@
 #include "queue_thread_safe.h"
 
 volatile sig_atomic_t keep_running = 1;
-volatile sig_atomic_t main_thread_done = 0;
 
 queue_thread_safe_t **p_queues = NULL;
 
 int main(int argc, char *argv[]) {
     (void)argc; (void)argv;
+
+    atomic_bool main_thread_done = ATOMIC_VAR_INIT(false);
 
     //For testing, print sizeof proto_type_e
     //printf("Size of proto_type_e: %ld\n", sizeof(proto_type_e));
@@ -47,7 +49,7 @@ int main(int argc, char *argv[]) {
     // Disable buffering for stdout and stderr
     disable_buffering();
 
-	struct gengetopt_args_info args;
+	struct gengetopt_args_info args; memset(&args, 0, sizeof(struct gengetopt_args_info));
 	if (cmdline_parser(argc, argv, &args)) {
         perror("Command line parser error\n");
         exit(EXIT_FAILURE);
@@ -56,6 +58,7 @@ int main(int argc, char *argv[]) {
     char *time = NULL;
     if (get_current_time(&time) == STATUS_ERROR) {
         fprintf(stderr, "Could not get current time\n");
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
     printf("Server started at %s\n", time);
@@ -65,18 +68,21 @@ int main(int argc, char *argv[]) {
     int server_port = args.port_arg;   
     if (validate_port(server_port) == STATUS_ERROR) {
         fprintf(stderr, "Wrong port value inserted\n");
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 
     struct sigaction sa; memset(&sa, 0, sizeof(struct sigaction));
     if (init_signal_handlers(&sa) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize signal handlers\n");
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 
     int server_socket = -1;
     if (init_server_socket(server_port, &server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize the socket\n");
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 
@@ -84,6 +90,7 @@ int main(int argc, char *argv[]) {
     logs_file_t server_logs_files[NUMBER_OF_SENSORS]; memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
     if (open_server_logs_files(logs_files_flag, server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not open all the server logs files\n");
+        cmdline_parser_free(&args);
         close_socket(server_socket);
         exit(EXIT_FAILURE);
     }
@@ -92,6 +99,7 @@ int main(int argc, char *argv[]) {
     p_queues = queues;
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
+        cmdline_parser_free(&args);
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
         exit(EXIT_FAILURE);
@@ -99,8 +107,9 @@ int main(int argc, char *argv[]) {
 
     pthread_t tids[NUMBER_OF_SENSORS]; memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, handle_client) == STATUS_ERROR) {
+    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize all threads\n");
+        cmdline_parser_free(&args);
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
         destroy_queues(queues);
@@ -157,7 +166,7 @@ int main(int argc, char *argv[]) {
         memset(buffer,0,sizeof(buffer));
     }
 
-    main_thread_done = 1;
+    atomic_store_explicit(&main_thread_done, true, memory_order_release);
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         pthread_cond_broadcast(&(p_queues[i]->cond));
@@ -229,7 +238,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void *handle_client(void *arg){ 
+void *handle_client(void *arg) { 
     // Block SIGINT in the worker thread
     sigset_t mask; memset(&mask, 0, sizeof(sigset_t));
     sigemptyset(&mask);
@@ -243,6 +252,7 @@ void *handle_client(void *arg){
     //int server_socket = params->server_socket;
     queue_thread_safe_t *queue = params->queue;
     logs_file_t *server_logs_file = params->server_logs_file;
+    atomic_bool *main_thread_done = params->main_thread_done;
 
     proto_sensor_data_t *data = NULL;
 
@@ -251,12 +261,12 @@ void *handle_client(void *arg){
 
         uint32_t number_of_elements = ucdlwb_get_number_of_elements(queue->elements);
     
-        if (main_thread_done && number_of_elements == 0) {
+        if (atomic_load_explicit(main_thread_done, memory_order_acquire) && number_of_elements == 0) {
             pthread_mutex_unlock(&queue->mutex);
-            break;  // Exit when queue is empty and termination flag is false
+            break;  // Exit when main thread is done and queue is empty
         }
     
-        data = queue_remove_thread_safe_with_condition_no_lock(queue, &main_thread_done); // Remove element while holding lock
+        data = queue_remove_thread_safe_with_condition_no_lock(queue, main_thread_done); // Remove element while holding lock
         pthread_mutex_unlock(&queue->mutex);  // Unlock after removing data
 
         if (data == NULL) {
@@ -330,14 +340,15 @@ int init_signal_handlers(struct sigaction *sa) {
 void signal_handler(int signum) {
     int aux;	
 	aux = errno;
+    printf("\nSignal Received (%d)\n", signum);	
+    /*
     void *array[10];
     size_t size;
     
     size = backtrace(array, 10);
 	
-	printf("\nSignal Received (%d)\n", signum);	
     backtrace_symbols_fd(array, size, STDERR_FILENO);
-
+    */
     keep_running = 0;	
 	
 	errno = aux;   

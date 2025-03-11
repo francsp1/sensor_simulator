@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include "queue_thread_safe.h"
 
@@ -39,6 +40,7 @@ typedef struct server_thread_params {
     queue_thread_safe_t * queue;
     int logs_files_flag;
     logs_file_t *server_logs_file;
+    atomic_bool *main_thread_done;
 } server_thread_params_t;
 
 /**
@@ -53,7 +55,7 @@ typedef struct server_thread_params {
  * @param handle_client Pointer to the function that will be executed by each thread
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, void *(*handle_client) (void *));
+int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *));
 
 #endif  // _THREADS_H
 
