@@ -36,15 +36,17 @@
 
 volatile sig_atomic_t keep_running = 1;
 
-queue_thread_safe_t **p_queues = NULL;
-
 int main(int argc, char *argv[]) {
-    (void)argc; (void)argv;
+    //For testing, print sizeof proto_type_e
+    //printf("Size of proto_type_e: %ld\n", sizeof(proto_type_e));
 
     atomic_bool main_thread_done = ATOMIC_VAR_INIT(false);
 
-    //For testing, print sizeof proto_type_e
-    //printf("Size of proto_type_e: %ld\n", sizeof(proto_type_e));
+    struct sigaction sa; memset(&sa, 0, sizeof(struct sigaction));
+    if (init_signal_handlers(&sa) == STATUS_ERROR) {
+        fprintf(stderr, "Could not initialize signal handlers\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Disable buffering for stdout and stderr
     disable_buffering();
@@ -72,13 +74,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction sa; memset(&sa, 0, sizeof(struct sigaction));
-    if (init_signal_handlers(&sa) == STATUS_ERROR) {
-        fprintf(stderr, "Could not initialize signal handlers\n");
-        cmdline_parser_free(&args);
-        exit(EXIT_FAILURE);
-    }
-
     int server_socket = -1;
     if (init_server_socket(server_port, &server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not initialize the socket\n");
@@ -96,7 +91,6 @@ int main(int argc, char *argv[]) {
     }
 
     queue_thread_safe_t *queues[NUMBER_OF_SENSORS]; memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
-    p_queues = queues;
     if (create_queues(queues) == STATUS_ERROR) {
         fprintf(stderr, "Could not create all necessary queues\n");
         cmdline_parser_free(&args);
@@ -113,13 +107,13 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
         destroy_queues(queues);
-        p_queues = NULL;
         exit(EXIT_FAILURE);
     }
 
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
     uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
+    proto_sensor_data_t *data = NULL;
     while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
@@ -133,7 +127,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
-        proto_sensor_data_t *data = calloc(1, sizeof(proto_sensor_data_t )); // The corresponding thread will free this memory
+        data = calloc(1, sizeof(proto_sensor_data_t )); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store sensor data\n");
             continue;
@@ -168,8 +162,8 @@ int main(int argc, char *argv[]) {
 
     atomic_store_explicit(&main_thread_done, true, memory_order_release);
 
-    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
-        pthread_cond_broadcast(&(p_queues[i]->cond));
+    for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
+        pthread_cond_broadcast(&(queues[i]->cond));
     }
 
     printf("\nWaiting for threads to empty queues...\n");
@@ -178,7 +172,6 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
         destroy_queues(queues);
-        p_queues = NULL;
         exit(EXIT_FAILURE);
     }
     printf("Threads finished emptying queues and ended\n\n");
@@ -186,9 +179,11 @@ int main(int argc, char *argv[]) {
 
     uint32_t total_messages = 0;
     float total_sum = 0;
+    uint32_t counter = 0;
+    uint32_t tid = 0;
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
-        uint32_t counter = thread_params[i].counter;
-        uint32_t tid = thread_params[i].id;
+        counter = thread_params[i].counter;
+        tid = thread_params[i].id;
         printf("Thread %d received %d messages from sensor %d\n", tid, counter, i);
 
         float result = 0;
@@ -229,7 +224,6 @@ int main(int argc, char *argv[]) {
     */
 
     destroy_queues(queues);
-    p_queues = NULL;
 
 	cmdline_parser_free(&args);
 
@@ -239,7 +233,7 @@ int main(int argc, char *argv[]) {
 }
 
 void *handle_client(void *arg) { 
-    // Block SIGINT in the worker thread
+    // Block SIGINT in the worker threads
     sigset_t mask; memset(&mask, 0, sizeof(sigset_t));
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);

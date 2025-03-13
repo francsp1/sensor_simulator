@@ -41,7 +41,7 @@ int _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
     printf("Destroying queues\n");
 
     for (uint32_t i = 0; i < n; i++){
-        printf("Destroying queue %d\n", i);
+        //printf("Destroying queue %d\n", i);
         queue_destroy_thread_safe(queues[i]);
     }
 
