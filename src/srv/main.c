@@ -333,19 +333,19 @@ int init_signal_handlers(struct sigaction *sa) {
 
 void signal_handler(int signum) {
     int aux;	
-	aux = errno;
+    aux = errno;
     printf("\nSignal Received (%d)\n", signum);	
     /*
     void *array[10];
     size_t size;
-    
+
     size = backtrace(array, 10);
-	
+
     backtrace_symbols_fd(array, size, STDERR_FILENO);
     */
     keep_running = 0;	
-	
-	errno = aux;   
+
+    errno = aux;   
 }
 
 // Path: src/srv/main.c
