@@ -51,11 +51,11 @@ int main(int argc, char *argv[]) {
     // Disable buffering for stdout and stderr
     disable_buffering();
 
-	struct gengetopt_args_info args; memset(&args, 0, sizeof(struct gengetopt_args_info));
-	if (cmdline_parser(argc, argv, &args)) {
+    struct gengetopt_args_info args; memset(&args, 0, sizeof(struct gengetopt_args_info));
+    if (cmdline_parser(argc, argv, &args)) {
         perror("Command line parser error\n");
         exit(EXIT_FAILURE);
-	}
+    }
 
     char *time = NULL;
     if (get_current_time(&time) == STATUS_ERROR) {
