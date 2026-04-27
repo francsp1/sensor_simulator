@@ -39,7 +39,7 @@ int receive_from_socket(int server_socket, uint8_t *buffer);
  * @param p_data_out Pointer to the proto_sensor_data_t structure where the deserialized data will be stored in host endianness
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int deserialize_sensor_data(uint8_t *buffer, proto_sensor_data_t *p_data_out);
+int deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out);
 
 #endif // _SERVER_SOCKET_H_
 

@@ -92,15 +92,20 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
     return STATUS_SUCCESS;
 }
 
-int deserialize_sensor_data(uint8_t *buffer, proto_sensor_data_t *p_data_out) {
+int deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
+    if (buffer == NULL || p_data_out == NULL) {
+        return STATUS_ERROR;
+    }
 
-    proto_sensor_data_t *data = (proto_sensor_data_t *) buffer;
-    data->hdr.type = ntohl(data->hdr.type);
-    data->hdr.sensor_id = ntohl(data->hdr.sensor_id);
-    data->hdr.len = ntohs(data->hdr.len);
-    data->data = ntohl(data->data);
+    proto_sensor_data_t data;
+    memcpy(&data, buffer, sizeof(proto_sensor_data_t));
 
-    *p_data_out = *data;
+    data.hdr.type = ntohl(data.hdr.type);
+    data.hdr.sensor_id = ntohl(data.hdr.sensor_id);
+    data.hdr.len = ntohs(data.hdr.len);
+    data.data = ntohl(data.data);
+
+    *p_data_out = data;
 
     return STATUS_SUCCESS;
 }

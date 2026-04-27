@@ -133,7 +133,12 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        deserialize_sensor_data(buffer, data);
+        if (deserialize_sensor_data(buffer, data)) {
+            fprintf(stderr, "Could not deserialize the sensor data\n");
+            free(data);
+            continue;
+        }
+        
 
         if (data->hdr.type != PROTO_SENSOR_DATA) {
             fprintf(stderr, "Invalid message type\n");
