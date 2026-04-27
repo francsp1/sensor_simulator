@@ -79,7 +79,15 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
         return STATUS_ERROR;
     }
 
-    //printf("Received %ld bytes from %s:%d\n", read_bytes, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
+    if (bytes_read == 0) {
+        fprintf(stderr, "Received empty UDP packet\n");
+        return STATUS_ERROR;
+    }
+
+    if (bytes_read < (ssize_t) sizeof(proto_sensor_data_t)) {
+        fprintf(stderr, "Received truncated packet (%zd bytes), expected at least %zu\n", bytes_read, sizeof(proto_sensor_data_t));
+        return STATUS_ERROR;
+    }
 
     return STATUS_SUCCESS;
 }

@@ -27,27 +27,23 @@
 
 #define TIME_BUFFER_SIZE (20) // Size of the buffer to store the time string
 
+
 /**
- * This enumeration defines the possible types of messages that can be sent between the server and the clients
- * @brief Enumeration of the possible message types
- * @param PROTO_SENSOR_DATA Exchange sensor data between the server and the clients
- * @enum proto_type_e
+ * This type defines the possible types of messages that can be sent between the server and the clients
  */
-typedef enum  {
-    PROTO_SENSOR_DATA,
-} proto_type_e;
-_Static_assert(sizeof(proto_type_e) == 4, "proto_type_e must be 4 bytes!"); // Ensures 4-byte storage (maybe this is necessary because when I am deserializing proto_type_e I am using ntohl. Also I am compiling the code with gcc flag -fno-short-enums)
+typedef uint32_t proto_type_t;
+#define PROTO_SENSOR_DATA 0u
 
 /**
  * This structure defines the header of the messages that will be exchanged between the server and the clients
  * @brief Header of the messages
- * @param type Type of the message (proto_type_e)
+ * @param type Type of the message (proto_type_t)
  * @param sensor_id Sensor ID
  * @param len Length of the data 
  * @struct proto_hdr_t
  */
-typedef struct {
-	proto_type_e type;
+typedef struct __attribute__((packed)) {
+	proto_type_t type;
     uint32_t sensor_id;
     uint16_t len;
 } proto_hdr_t;
@@ -59,7 +55,7 @@ typedef struct {
  * @param data Data of the message
  * @struct proto_sensor_data_t
  */
-typedef struct {
+typedef struct __attribute__((packed)) {
     proto_hdr_t hdr;
     uint32_t data;
 } proto_sensor_data_t;
