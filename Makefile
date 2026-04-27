@@ -8,10 +8,12 @@ TARGET_CLI =bin/client
 SRV_INC_DIRS =-Iinc -Iinc/lib -Iinc/srv -Iinc/srv/args 
 CLI_INC_DIRS =-Iinc -Iinc/lib -Iinc/cli -Iinc/cli/args
 
-SRV_LIBS =-pthread -lqueue -Lsrc/lib  #-lm
+SRV_LIBS =-Lsrc/lib -pthread -lqueue#-lm
 CLI_LIBS =-pthread
 
-CFLAGS =-ggdb -std=c11 -Wall -Wextra -fno-short-enums -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -ggdb -D_POSIX_C_SOURCE=200809L# -Werror -pg
+CFLAGS =-ggdb -std=c11 -Wall -Wextra -fno-short-enums -Wpedantic -pedantic -pedantic-errors -Wmissing-declarations -Wmissing-include-dirs -Wundef -Wfloat-equal -D_POSIX_C_SOURCE=200809L# -Werror -pg
+
+OBJ_DIRS = obj obj/srv obj/srv/args obj/cli obj/cli/args bin
 
 SRC_SRV =$(wildcard src/srv/*.c)
 OBJ_SRV   =$(SRC_SRV:src/srv/%.c=obj/srv/%.o)
@@ -21,7 +23,7 @@ SRC_CLI =$(wildcard src/cli/*.c)
 OBJ_CLI   =$(SRC_CLI:src/cli/%.c=obj/cli/%.o) 
 CLIENT_OBJECTS =$(OBJ_CLI) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
 
-.PHONY: all run default clean 
+.PHONY: all run runld rmlogs default clean 
 
 all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $(TARGET_CLI)
 
@@ -74,11 +76,17 @@ src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h: src/cli/args/$(PROG
 
 # Generate gengetopt .o files with no warnings
 # Server
-obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h
+obj/srv/args/$(PROGRAM_OPT).o: src/srv/args/$(PROGRAM_OPT).c inc/srv/args/$(PROGRAM_OPT).h | obj/srv/args
 	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ $(SRV_INC_DIRS)
 # Client
-obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h
+obj/cli/args/$(PROGRAM_OPT).o: src/cli/args/$(PROGRAM_OPT).c inc/cli/args/$(PROGRAM_OPT).h | obj/cli/args
 	$(COMPILER) -ggdb -std=c11 -pedantic -c $< -o $@ $(CLI_INC_DIRS)
+
+$(OBJ_SRV): | obj/srv
+$(OBJ_CLI): | obj/cli
+
+$(OBJ_DIRS):
+	mkdir -p $@
 
 
 obj/common.o: src/common.c inc/common.h
@@ -89,13 +97,13 @@ $(OBJ_SRV): obj/srv/%.o: src/srv/%.c
 	$(COMPILER) $(CFLAGS) -c $< -o $@ $(SRV_INC_DIRS)
 
 # Compile Server
-$(TARGET_SRV): $(SERVER_OBJECTS) 
-	$(COMPILER) -g -o $@ $^ $(SRV_LIBS) 
+$(TARGET_SRV): $(SERVER_OBJECTS) | bin
+	$(COMPILER) -g -o $@ $^ $(SRV_LIBS)
 
 # Generate .o files from every .c file in src/cli
 $(OBJ_CLI): obj/cli/%.o: src/cli/%.c
 	$(COMPILER) $(CFLAGS) -c $< -o $@ $(CLI_INC_DIRS)
 
 # Compile Client
-$(TARGET_CLI): $(CLIENT_OBJECTS) 
+$(TARGET_CLI): $(CLIENT_OBJECTS) | bin
 	$(COMPILER) -o $@ $^ $(CLI_LIBS)

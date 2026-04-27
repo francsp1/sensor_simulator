@@ -1,0 +1,8 @@
+services:
+  server:
+    build: .
+    ports:
+      - "8080:8080/udp"
+    volumes:
+      - ./logs:/app/logs
+    command: ["--port", "8080"]
