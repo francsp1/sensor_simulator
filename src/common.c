@@ -17,6 +17,18 @@
 
 #include "common.h"
 
+/**
+ * This function logs the sensor data
+ * @brief Log the sensor data
+ * @param logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param sensor_data Pointer to the proto_sensor_data_t structure that contains the sensor data
+ * @param thread_id ID of the thread/sensor that sent/received the sensor data
+ * @param format Format of the log message. 
+ * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
+ * @note this function is used by log_server_sensor_data and log_client_sensor_data and should not be called directly. 
+ */
+static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
+
 int validate_port(int server_port) {
     if (server_port < 1024 || server_port > 65535) {
         fprintf(stderr, "Invalid port number. Should be between 1024 and 65535.\n");
@@ -209,7 +221,7 @@ int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_d
 }
 
 
-int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
+static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
     //printf("Logging sensor data\n");
     
     if (logs_file == NULL) {

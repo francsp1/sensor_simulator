@@ -32,7 +32,7 @@ typedef struct client_thread_params {
     int logs_files_flag;
     logs_file_t *client_logs_file;
     int packets_per_sensor;
-}client_thread_params_t;
+} client_thread_params_t;
 
 /**
  * This function initializes the client threads. Thee number od threads is equal to the number of sensors (NUMBER_OF_SENSORS macro in common.h)

@@ -30,9 +30,18 @@
 
 /**
  * This type defines the possible types of messages that can be sent between the server and the clients
+ * @brief Types of messages that can be sent between the server and the clients
+ * @param PROTO_SENSOR_DATA Message that contains the sensor data sent by the client to the server
+ * @typedef proto_type_t
  */
 typedef uint32_t proto_type_t;
-#define PROTO_SENSOR_DATA 0u
+
+/**
+ * This macro defines the type of the message that contains the sensor data sent by the client to the server
+ * @brief Type of the message that contains the sensor data sent by the client to the server
+ * @note This macro is used to set the type field of the proto_hdr_t structure when sending the sensor data from the client to the server
+ */
+#define PROTO_SENSOR_DATA ( (proto_type_t) (0u))
 
 /**
  * This structure defines the header of the messages that will be exchanged between the server and the clients
@@ -40,25 +49,29 @@ typedef uint32_t proto_type_t;
  * @param type Type of the message (proto_type_t)
  * @param sensor_id Sensor ID
  * @param len Length of the data 
- * @struct proto_hdr_t
+ * @struct proto_hdr
+ * @typedef proto_hdr_t
  */
-typedef struct __attribute__((packed)) {
-	proto_type_t type;
+typedef struct proto_hdr {
+    proto_type_t type;
     uint32_t sensor_id;
     uint16_t len;
-} proto_hdr_t;
+} __attribute__((packed)) proto_hdr_t;
+_Static_assert(sizeof(proto_hdr_t) == 10, "proto_hdr_t must be 10 bytes");
 
 /**
  * This structure defines the messages that the client will send to the server with the sensor data
  * @brief Messages exchanged between the server and the clients
  * @param hdr Header of the message
  * @param data Data of the message
- * @struct proto_sensor_data_t
+ * @struct proto_sensor_data
+ * @typedef proto_sensor_data_t
  */
-typedef struct __attribute__((packed)) {
+typedef struct proto_sensor_data{
     proto_hdr_t hdr;
     uint32_t data;
-} proto_sensor_data_t;
+} __attribute__((packed)) proto_sensor_data_t;
+_Static_assert(sizeof(proto_sensor_data_t) == 14, "proto_sensor_data_t must be 14 bytes");
 
 /**
  * This function validates the port number received as an argument via gengetopt
@@ -156,18 +169,6 @@ int log_server_sensor_data(logs_file_t *server_logs_file, proto_sensor_data_t *s
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
 int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
-
-/**
- * This function logs the sensor data
- * @brief Log the sensor data
- * @param logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @param sensor_data Pointer to the proto_sensor_data_t structure that contains the sensor data
- * @param thread_id ID of the thread/sensor that sent/received the sensor data
- * @param format Format of the log message
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
- * @note this function is used by log_server_sensor_data and log_client_sensor_data and should not be called directly
- */
-int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
 
 
 #endif // _COMMON_H_
