@@ -23,9 +23,13 @@ SRC_CLI =$(wildcard src/cli/*.c)
 OBJ_CLI   =$(SRC_CLI:src/cli/%.c=obj/cli/%.o) 
 CLIENT_OBJECTS =$(OBJ_CLI) obj/common.o obj/cli/args/$(PROGRAM_OPT).o
 
-.PHONY: all run runld rmlogs default clean 
+.PHONY: all server client run runld rmlogs default clean 
 
-all: obj/srv/args/$(PROGRAM_OPT).o obj/cli/args/$(PROGRAM_OPT).o $(TARGET_SRV) $(TARGET_CLI)
+all: $(TARGET_SRV) $(TARGET_CLI)
+
+server: $(TARGET_SRV)
+
+client: $(TARGET_CLI)
 
 run: clean rmlogs default
 	./$(TARGET_SRV) --port 8080 
@@ -37,7 +41,7 @@ rmlogs:
 	rm -f logs/srv/*
 	rm -f logs/cli/*
 
-default: $(TARGET_SRV) $(TARGET_CLI)
+default: all
 
 clean:
 	rm -f inc/srv/args/$(PROGRAM_OPT).h 
