@@ -13,19 +13,19 @@ WORKDIR /app
 COPY . /app
 
 RUN make clean
-RUN make server
+RUN make client
 
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/bin/server ./server
+COPY --from=builder /app/bin/client ./client
 COPY --from=builder /app/src/lib/libqueue.so ./libqueue.so
 
-RUN mkdir -p /app/logs/srv /app/logs/cli
+RUN mkdir -p /app/logs/srv /app/logs/client
 
 ENV LD_LIBRARY_PATH=/app
-EXPOSE 8080
+#EXPOSE 8080
 
-ENTRYPOINT ["./server"]
-CMD ["--port", "8080"]
+ENTRYPOINT ["./client"]
+CMD ["--ip", "server", "--port", "8080"]
