@@ -16,13 +16,13 @@
 /**
  * This function initializes the socket to send UDP sensor messages to the server
  * @brief Initialize the sensor simulation (client) socket
- * @param ip IP address string of the server to connect to
+ * @param host Hostname or IPv4 address string of the server to connect to
  * @param port Port number of the server to connect to
  * @param p_client_socket_out Pointer to the client socket to be initialized
  * @param p_server_endpoint_out Pointer to the server endpoint (struct sockaddr_in) to be initialized
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int init_client_socket(const char *ip, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out);
+int init_client_socket(const char *host, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out);
 
 /**
  * This function packs the data to be sent to the server in the proto_sensor_data_t structure

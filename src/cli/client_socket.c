@@ -15,15 +15,14 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <time.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/time.h>
+#include <netdb.h>
 
 #include "client_socket.h"
 #include "common.h"
 
-int init_client_socket(const char *ip, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out) {
+int init_client_socket(const char *host, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out) {
 
 	int client_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (client_socket == -1) {
@@ -44,17 +43,24 @@ int init_client_socket(const char *ip, int port, int *p_client_socket_out, struc
 
 	struct sockaddr_in server_endpoint; memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
 	server_endpoint.sin_family = AF_INET;
-    int aux = inet_pton(AF_INET, ip, &server_endpoint.sin_addr.s_addr);
-    if (aux == 0) {
-        fprintf(stderr, "Cannot convert IP address (IPv4): Invalid Network Address\n");
-        close_socket(client_socket);
-        return STATUS_ERROR;
-    } else if (aux == -1) {
-        fprintf(stderr, "Cannot convert IP address (IPv4)\n");
+
+    struct addrinfo hints;
+    struct addrinfo *result = NULL;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    int gai_ret = getaddrinfo(host, NULL, &hints, &result);
+    if (gai_ret != 0) {
+        fprintf(stderr, "Cannot resolve host '%s': %s\n", host, gai_strerror(gai_ret));
         close_socket(client_socket);
         return STATUS_ERROR;
     }
-	server_endpoint.sin_port = htons(port);
+
+    struct sockaddr_in *resolved_addr = (struct sockaddr_in *) result->ai_addr;
+    server_endpoint.sin_addr = resolved_addr->sin_addr;
+    freeaddrinfo(result);
+    server_endpoint.sin_port = htons(port);
 
     printf("Client socket created\n");
 
