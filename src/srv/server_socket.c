@@ -97,15 +97,12 @@ int deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_o
         return STATUS_ERROR;
     }
 
-    proto_sensor_data_t data;
-    memcpy(&data, buffer, sizeof(proto_sensor_data_t));
+    memcpy(p_data_out, buffer, sizeof(proto_sensor_data_t));
 
-    data.hdr.type = ntohl(data.hdr.type);
-    data.hdr.sensor_id = ntohl(data.hdr.sensor_id);
-    data.hdr.len = ntohs(data.hdr.len);
-    data.data = ntohl(data.data);
-
-    *p_data_out = data;
+    p_data_out->hdr.type = ntohl(p_data_out->hdr.type);
+    p_data_out->hdr.sensor_id = ntohl(p_data_out->hdr.sensor_id);
+    p_data_out->hdr.len = ntohs(p_data_out->hdr.len);
+    p_data_out->data = ntohl(p_data_out->data);
 
     return STATUS_SUCCESS;
 }
