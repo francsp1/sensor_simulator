@@ -168,7 +168,9 @@ int main(int argc, char *argv[]) {
     atomic_store_explicit(&main_thread_done, true, memory_order_release);
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
+        pthread_mutex_lock(&queues[i]->mutex);
         pthread_cond_broadcast(&(queues[i]->cond));
+        pthread_mutex_unlock(&queues[i]->mutex);
     }
 
     printf("\nWaiting for threads to empty queues...\n");

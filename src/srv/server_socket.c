@@ -37,10 +37,29 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     int option = 1;	
 	if( setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) //<-- usar antes do bind 
     {
-        fprintf(stderr, "setsockopt failed!\n");
+        fprintf(stderr, "setsockopt SO_REUSEADDR failed: %s\n", strerror(errno));
         close(server_socket);
         return STATUS_ERROR;
     }
+
+    /*
+    // Increase the receive buffer for the UDP socket
+    int recvbuf = 8 * 1024 * 1024;
+    if (setsockopt(server_socket, SOL_SOCKET, SO_RCVBUF, &recvbuf, sizeof(recvbuf)) < 0) {
+        fprintf(stderr, "setsockopt SO_RCVBUF failed: %s\n", strerror(errno));
+        close(server_socket);
+        return STATUS_ERROR;
+    }
+
+    int actual = 0;
+    socklen_t len = sizeof(actual);
+
+    if (getsockopt(server_socket, SOL_SOCKET, SO_RCVBUF, &actual, &len) < 0) {
+        fprintf(stderr, "getsockopt SO_RCVBUF failed: %s\n", strerror(errno));
+    } else {
+        printf("Actual receive buffer size: %d bytes\n", actual);
+    }
+    */
 
     // Set up the server address struct
     struct sockaddr_in server_address; memset(&server_address, 0, sizeof(struct sockaddr_in));  	

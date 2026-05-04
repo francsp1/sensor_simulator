@@ -97,18 +97,30 @@ int serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serial
 
 int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint) {
 
-    ssize_t sent_bytes;
-
 #ifdef DEBUG
     printf("Sending data to server...");
-#endif // DEBUG
-	if ((sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in))) == -1) {
+#endif
+
+    ssize_t sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
+
+	if ((sent_bytes == -1)) {
         fprintf(stderr, "Error sending data to server\n");
         return STATUS_ERROR;
     }
-#ifdef DEBUG    
+
+    if (sent_bytes == 0) {
+        fprintf(stderr, "No data sent to server\n");
+        return STATUS_ERROR;
+    }
+
+    if (sent_bytes != sizeof(proto_sensor_data_t)) {
+        fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%lu)\n", sent_bytes, sizeof(proto_sensor_data_t));
+        return STATUS_ERROR;
+    }
+
+#ifdef DEBUG
 	printf("ok.  (%ld bytes sent)\n", sent_bytes);
-#endif // DEBUG
+#endif
 
     return STATUS_SUCCESS;
 }
