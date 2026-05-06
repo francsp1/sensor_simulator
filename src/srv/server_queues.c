@@ -20,7 +20,28 @@
 #include "queue.h"
 #include "queue_thread_safe.h"
 
-int create_queues(queue_thread_safe_t **queues){
+/**
+ * This enum defines the possible return values of the _destroy_n_queues function
+ * @brief Status codes for the _destroy_n_queues function
+ * @param _DESTROY_N_QUEUES_SUCCESS The execution of the function _destroy_n_queues was successful
+ * @typedef _destroy_n_queues_status_e
+ */
+typedef enum _destroy_n_queues_status {
+    _DESTROY_N_QUEUES_SUCCESS = 0,
+} _destroy_n_queues_status_e;
+
+
+/**
+ * This function destroys n queues and frees the memory allocated for them
+ * @brief Destroy n queues
+ * @param queues Pointer to the array of queue_thread_safe_t structures where the queues are stored
+ * @param n Number of queues to be destroyed
+ * @return _destroy_n_queues_status_e enum value indicating the result of the operation
+ * @note This function should only be used internally. Do not use it directly
+ */
+static _destroy_n_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n);
+
+server_create_queues_status_e server_create_queues(queue_thread_safe_t **queues){
     printf("Creating queues...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
@@ -28,16 +49,16 @@ int create_queues(queue_thread_safe_t **queues){
         if (queues[i] == NULL){
             fprintf(stderr, "Error creating queue %d\n", i);
             _destroy_n_queues(queues, i);
-            return STATUS_ERROR;
+            return SERVER_CREATE_QUEUES_ERROR;
         }
     }
 
     printf("Queues created successfully.\n");
 
-    return STATUS_SUCCESS;
+    return SERVER_CREATE_QUEUES_SUCCESS;
 }
 
-int _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
+_destroy_n_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
     printf("Destroying queues\n");
 
     for (uint32_t i = 0; i < n; i++){
@@ -47,7 +68,7 @@ int _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
 
     printf("%d queues destroyed\n", n);
 
-    return STATUS_SUCCESS;
+    return _DESTROY_N_QUEUES_SUCCESS;
 }
 
 int destroy_queues(queue_thread_safe_t **queues){

@@ -29,12 +29,12 @@
  */
 static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
 
-int validate_port(int server_port) {
+validate_port_status_e validate_port(int server_port) {
     if (server_port < 1024 || server_port > 65535) {
         fprintf(stderr, "Invalid port number. Should be between 1024 and 65535.\n");
-        return STATUS_ERROR;
+        return VALIDATE_PORT_INVALID_PORT;
     }
-    return STATUS_SUCCESS;
+    return VALIDATE_PORT_SUCCESS;
 }
 
 void disable_buffering(void) {

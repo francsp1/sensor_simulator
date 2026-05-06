@@ -24,13 +24,13 @@
 
 #include "common.h"
 
-int init_server_socket(int server_port, int *p_server_socket_out){
+init_server_socket_status_e init_server_socket(int server_port, int *p_server_socket_out){
 
     printf("Initializing server socket...\n");
     int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket == -1) {
         fprintf(stderr, "Error creating server socket\n");
-        return STATUS_ERROR;
+        return INIT_SERVER_SOCKET_SOCKET_ERROR;
     }
 
     // Reuse port 
@@ -39,7 +39,7 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     {
         fprintf(stderr, "setsockopt SO_REUSEADDR failed: %s\n", strerror(errno));
         close(server_socket);
-        return STATUS_ERROR;
+        return INIT_SERVER_SOCKET_REUSEADDR_ERROR;
     }
 
     /*
@@ -48,7 +48,7 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     if (setsockopt(server_socket, SOL_SOCKET, SO_RCVBUF, &recvbuf, sizeof(recvbuf)) < 0) {
         fprintf(stderr, "setsockopt SO_RCVBUF failed: %s\n", strerror(errno));
         close(server_socket);
-        return STATUS_ERROR;
+        return INIT_SERVER_SOCKET_RCVBUF_ERROR;
     }
 
     int actual = 0;
@@ -70,17 +70,17 @@ int init_server_socket(int server_port, int *p_server_socket_out){
     if (bind(server_socket, (struct sockaddr*)&server_address, sizeof(server_address)) == -1) {
         fprintf(stderr, "Error binding socket\n");
         close(server_socket);
-        return STATUS_ERROR;
+        return INIT_SERVER_SOCKET_BIND_ERROR;
     }
     
     *p_server_socket_out = server_socket;
 
     printf("Server socket initialized\n");
     
-    return STATUS_SUCCESS;
+    return INIT_SERVER_SOCKET_SUCCESS;
 }
 
-int receive_from_socket(int server_socket, uint8_t *buffer){
+receive_from_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer){
     socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
     struct sockaddr_in client_endpoint; memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
     //ssize_t read_bytes;
@@ -92,28 +92,28 @@ int receive_from_socket(int server_socket, uint8_t *buffer){
     if (bytes_read == -1) {
         if (errno == EINTR) { // Interrupted by a signal 
             fprintf(stderr, "recvfrom() interrupted by a signal\n");
-            return STATUS_ERROR;
+            return RECEIVE_FROM_SOCKET_INTERUPTED_BY_SIGNAL;
         }
         fprintf(stderr, "Error receiving data from client\n");
-        return STATUS_ERROR;
+        return RECEIVE_FROM_SOCKET_RECVFROM_ERROR;
     }
 
     if (bytes_read == 0) {
         fprintf(stderr, "Received empty UDP packet\n");
-        return STATUS_ERROR;
+        return RECEIVE_FROM_SOCKET_EMPTY_PACKET;
     }
 
     if (bytes_read < (ssize_t) sizeof(proto_sensor_data_t)) {
         fprintf(stderr, "Received truncated packet (%zd bytes), expected at least %zu\n", bytes_read, sizeof(proto_sensor_data_t));
-        return STATUS_ERROR;
+        return RECEIVE_FROM_SOCKET_TRUNCATED_PACKET;
     }
 
-    return STATUS_SUCCESS;
+    return RECEIVE_FROM_SOCKET_SUCCESS;
 }
 
-int deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
+deserialize_sensor_data_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
-        return STATUS_ERROR;
+        return DESERIALIZE_SENSOR_DATA_NULL_POINTER;
     }
 
     memcpy(p_data_out, buffer, sizeof(proto_sensor_data_t));
@@ -123,7 +123,7 @@ int deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_o
     p_data_out->hdr.len = ntohs(p_data_out->hdr.len);
     p_data_out->data = ntohl(p_data_out->data);
 
-    return STATUS_SUCCESS;
+    return DESERIALIZE_SENSOR_DATA_SUCCESS;
 }
 
 // Path: src/srv/server_socket.c

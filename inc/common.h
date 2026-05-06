@@ -74,12 +74,24 @@ typedef struct proto_sensor_data{
 _Static_assert(sizeof(proto_sensor_data_t) == 14, "proto_sensor_data_t must be 14 bytes");
 
 /**
+ * This enum defines the status codes returned by the validate_port function
+ * @brief Status codes for the validate_port function
+ * @param VALIDATE_PORT_SUCCESS The execution of the function validate_port was successful
+ * @param VALIDATE_PORT_INVALID_PORT The given port number is invalid, it should be between 1024 and 65535
+ * @typedef validate_port_status_e
+ */
+typedef enum validate_port_status {
+    VALIDATE_PORT_SUCCESS = 0,
+    VALIDATE_PORT_INVALID_PORT = -1,
+} validate_port_status_e;
+
+/**
  * This function validates the port number received as an argument via gengetopt
  * @brief Validate the port number
  * @param server_port Port number to be validated received as an argument via gengetopt
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
+ * @return validate_port_status_e value indicating the result of the operation
  */
-int validate_port(int server_port);
+validate_port_status_e validate_port(int server_port);
 
 /**
  * This function disables the buffering of the stdout and stderr streams

@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     }
 
     int server_port = args.port_arg;
-    if (validate_port(server_port) == STATUS_ERROR) {
+    if (validate_port(server_port) != VALIDATE_PORT_SUCCESS) {
         fprintf(stderr, "Wrong port value inserted\n");
         exit(EXIT_FAILURE);
     }

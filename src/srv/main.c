@@ -68,14 +68,14 @@ int main(int argc, char *argv[]) {
     
 
     int server_port = args.port_arg;   
-    if (validate_port(server_port) == STATUS_ERROR) {
+    if (validate_port(server_port) != VALIDATE_PORT_SUCCESS) {
         fprintf(stderr, "Wrong port value inserted\n");
         cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 
     int server_socket = -1;
-    if (init_server_socket(server_port, &server_socket) == STATUS_ERROR) {
+    if (init_server_socket(server_port, &server_socket) != INIT_SERVER_SOCKET_SUCCESS) {
         fprintf(stderr, "Could not initialize the socket\n");
         cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     }
 
     queue_thread_safe_t *queues[NUMBER_OF_SENSORS]; memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
-    if (create_queues(queues) == STATUS_ERROR) {
+    if (server_create_queues(queues) != SERVER_CREATE_QUEUES_SUCCESS) {
         fprintf(stderr, "Could not create all necessary queues\n");
         cmdline_parser_free(&args);
         close_socket(server_socket);
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     proto_sensor_data_t *data = NULL;
     while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
-        if (receive_from_socket(server_socket, buffer) == STATUS_ERROR) {
+        if (receive_from_socket(server_socket, buffer) != RECEIVE_FROM_SOCKET_SUCCESS) {
             /*
             if (errno == EINTR) { // Interrupted by a signal
                 fprintf(stderr, "recvfrom() interrupted by a signal\n");
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        if (deserialize_sensor_data(buffer, data)) {
+        if (deserialize_sensor_data(buffer, data) != DESERIALIZE_SENSOR_DATA_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data\n");
             free(data);
             continue;
