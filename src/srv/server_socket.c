@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-init_server_socket_status_e init_server_socket(int server_port, int *p_server_socket_out){
+server_socket_status_e init_server_socket(int server_port, int *p_server_socket_out){
 
     printf("Initializing server socket...\n");
     int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -77,10 +77,10 @@ init_server_socket_status_e init_server_socket(int server_port, int *p_server_so
 
     printf("Server socket initialized\n");
     
-    return INIT_SERVER_SOCKET_SUCCESS;
+    return SERVER_SOCKET_SUCCESS;
 }
 
-receive_from_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer){
+ server_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer){
     socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
     struct sockaddr_in client_endpoint; memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
     //ssize_t read_bytes;
@@ -108,10 +108,10 @@ receive_from_socket_status_e receive_from_socket(int server_socket, uint8_t *buf
         return RECEIVE_FROM_SOCKET_TRUNCATED_PACKET;
     }
 
-    return RECEIVE_FROM_SOCKET_SUCCESS;
+    return SERVER_SOCKET_SUCCESS;
 }
 
-deserialize_sensor_data_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
+server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
         return DESERIALIZE_SENSOR_DATA_NULL_POINTER;
     }
@@ -123,7 +123,7 @@ deserialize_sensor_data_status_e deserialize_sensor_data(const uint8_t *buffer, 
     p_data_out->hdr.len = ntohs(p_data_out->hdr.len);
     p_data_out->data = ntohl(p_data_out->data);
 
-    return DESERIALIZE_SENSOR_DATA_SUCCESS;
+    return SERVER_SOCKET_SUCCESS;
 }
 
 // Path: src/srv/server_socket.c
