@@ -21,17 +21,6 @@
 #include "queue_thread_safe.h"
 
 /**
- * This enum defines the possible return values of the _destroy_n_queues function
- * @brief Status codes for the _destroy_n_queues function
- * @param _DESTROY_N_QUEUES_SUCCESS The execution of the function _destroy_n_queues was successful
- * @typedef _destroy_n_queues_status_e
- */
-typedef enum _destroy_n_queues_status {
-    _DESTROY_N_QUEUES_SUCCESS = 0,
-} _destroy_n_queues_status_e;
-
-
-/**
  * This function destroys n queues and frees the memory allocated for them
  * @brief Destroy n queues
  * @param queues Pointer to the array of queue_thread_safe_t structures where the queues are stored
@@ -39,9 +28,9 @@ typedef enum _destroy_n_queues_status {
  * @return _destroy_n_queues_status_e enum value indicating the result of the operation
  * @note This function should only be used internally. Do not use it directly
  */
-static _destroy_n_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n);
+static server_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n);
 
-server_create_queues_status_e server_create_queues(queue_thread_safe_t **queues){
+server_queues_status_e create_server_queues(queue_thread_safe_t **queues){
     printf("Creating queues...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
@@ -49,16 +38,16 @@ server_create_queues_status_e server_create_queues(queue_thread_safe_t **queues)
         if (queues[i] == NULL){
             fprintf(stderr, "Error creating queue %d\n", i);
             _destroy_n_queues(queues, i);
-            return SERVER_CREATE_QUEUES_ERROR;
+            return CREATE_SERVER_QUEUES_ERROR;
         }
     }
 
     printf("Queues created successfully.\n");
 
-    return SERVER_CREATE_QUEUES_SUCCESS;
+    return SERVER_QUEUES_SUCCESS;
 }
 
-_destroy_n_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
+server_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
     printf("Destroying queues\n");
 
     for (uint32_t i = 0; i < n; i++){
@@ -68,31 +57,31 @@ _destroy_n_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint3
 
     printf("%d queues destroyed\n", n);
 
-    return _DESTROY_N_QUEUES_SUCCESS;
+    return SERVER_QUEUES_SUCCESS;
 }
 
-int destroy_queues(queue_thread_safe_t **queues){
+server_queues_status_e destroy_server_queues(queue_thread_safe_t **queues){
     return _destroy_n_queues(queues, NUMBER_OF_SENSORS);
 }
 
-int print_queue(const queue_thread_safe_t *queue){
+server_queues_status_e print_server_queue(const queue_thread_safe_t *queue){
 
     unordered_circular_doubly_list_with_base_t *list = queue->elements;
 
     if (list == NULL) {
         fprintf(stderr, "[%d@%s][ERROR] The list must not be NULL\n", __LINE__, __FILE__);
-        return STATUS_ERROR;
+        return PRINT_SERVER_QUEUE_NULL_LIST_ERROR;
     }
 
     doubly_node_t *base_node = list->base_node;
     if (base_node == NULL) {
         fprintf(stderr, "[%d@%s][ERROR] Base node is NULL\n", __LINE__, __FILE__);
-        return STATUS_ERROR;
+        return PRINT_SERVER_QUEUE_NULL_BASE_NODE_ERROR;
     }
 
     if (list->number_of_elements == 0 && (base_node->next != base_node && base_node->previous != base_node)) {
         fprintf(stderr, "[%d@%s][ERROR] The list has been corrupted\n", __LINE__, __FILE__);
-        return STATUS_ERROR;
+        return PRINT_SERVER_QUEUE_CORRUPTED_LIST_ERROR;
     }
 
     
@@ -103,7 +92,7 @@ int print_queue(const queue_thread_safe_t *queue){
 
 
     if (list->number_of_elements < 1) {
-        return STATUS_SUCCESS;
+        return SERVER_QUEUES_SUCCESS;
     }
     
     unsigned int aux = 0;
@@ -119,7 +108,7 @@ int print_queue(const queue_thread_safe_t *queue){
     
 	printf("-----------------------------------------------------\n");
 
-    return STATUS_SUCCESS;
+    return SERVER_QUEUES_SUCCESS;
     
 }
 

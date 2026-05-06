@@ -15,7 +15,7 @@
 #include "common.h"
 
 /**
- * This enum defines the possible return values of this file (server_socket.c) functions.
+ * This enum defines the possible return values of the functions in this module (server_socket.c).
  * @brief Status codes for the server socket functions
  * 
  * @param SERVER_SOCKET_SUCCESS The execution of the function was successful
@@ -26,12 +26,12 @@
  * @param INIT_SERVER_SOCKET_BIND_ERROR An error occurred while binding the server socket in the init_server_socket function
  * @param INIT_SERVER_SOCKET_SETSOCKOPT_ERROR An error occurred while setting a socket option in the init_server_socket function
  *
- * @param RECEIVE_FROM_SOCKET_INTERUPTED_BY_SIGNAL The recvfrom function was interrupted by a signal in the receive_from_socket function
+ * @param RECEIVE_FROM_SOCKET_INTERUPTED_BY_SIGNAL An error occurred because the recvfrom function was interrupted by a signal in the receive_from_socket function
  * @param RECEIVE_FROM_SOCKET_RECVFROM_ERROR An error occurred while receiving data from the client in the receive_from_socket function
- * @param RECEIVE_FROM_SOCKET_EMPTY_PACKET An empty (size 0) UDP packet was received in the receive_from_socket 
- * @param RECEIVE_FROM_SOCKET_TRUNCATED_PACKET A truncated UDP packet was received (size smaller than sizeof(proto_sensor_data_t)) in the receive_from_socket function
+ * @param RECEIVE_FROM_SOCKET_EMPTY_PACKET An error occurred because an empty (size 0) UDP packet was received in the receive_from_socket function
+ * @param RECEIVE_FROM_SOCKET_TRUNCATED_PACKET An error occurred because a truncated UDP packet was received (size smaller than sizeof(proto_sensor_data_t)) in the receive_from_socket function
  * 
- * @param DESERIALIZE_SENSOR_DATA_NULL_POINTER A null pointer was passed to the deserialize_sensor_data function
+ * @param DESERIALIZE_SENSOR_DATA_NULL_POINTER An error occurred because a null pointer was passed to the deserialize_sensor_data function
  * 
  * @typedef server_socket_status_e
  */

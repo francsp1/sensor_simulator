@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     }
 
     queue_thread_safe_t *queues[NUMBER_OF_SENSORS]; memset(queues, 0, sizeof(queue_thread_safe_t *) * NUMBER_OF_SENSORS);
-    if (server_create_queues(queues) != SERVER_CREATE_QUEUES_SUCCESS) {
+    if (create_server_queues(queues) != SERVER_QUEUES_SUCCESS) {
         fprintf(stderr, "Could not create all necessary queues\n");
         cmdline_parser_free(&args);
         close_socket(server_socket);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
         cmdline_parser_free(&args);
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
-        destroy_queues(queues);
+        destroy_server_queues(queues);
         exit(EXIT_FAILURE);
     }
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Could not join all threads\n");
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
-        destroy_queues(queues);
+        destroy_server_queues(queues);
         exit(EXIT_FAILURE);
     }
     printf("Threads finished emptying queues and ended\n\n");
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    destroy_queues(queues);
+    destroy_server_queues(queues);
 
 	cmdline_parser_free(&args);
 
