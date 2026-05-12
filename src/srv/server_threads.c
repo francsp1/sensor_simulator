@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *)) {
+server_threads_status_e init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *)) {
     printf("Initializing threads...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
@@ -36,12 +36,12 @@ int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         if ((pthread_create(&tids[i], NULL, handle_client, &thread_params[i])) != 0){
             fprintf(stderr, "Error creating thread %d\n", i);
-            return STATUS_ERROR;
+            return INIT_SERVER_THREADS_PTHREAD_CREATE_ERROR;
         }
     }
 
     printf("Threads initialized...\n");
-    return STATUS_SUCCESS;
+    return SERVER_THREADS_SUCCESS;
 }
 
 // Path: src/srv/server_threads.c

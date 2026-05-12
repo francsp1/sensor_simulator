@@ -22,14 +22,14 @@
 #include "client_socket.h"
 #include "common.h"
 
-int init_client_socket(const char *host, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out) {
+client_socket_status_e init_client_socket(const char *host, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out) {
 
 	int client_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (client_socket == -1) {
         fprintf(stderr, "Error creating client socket\n");
-        return STATUS_ERROR;
+        return INIT_CLIENT_SOCKET_SOCKET_ERROR;
     }
-		
+
 
 	struct timeval timeout; memset(&timeout, 0, sizeof(timeout));
 	timeout.tv_sec = 10; //seconds
@@ -38,7 +38,7 @@ int init_client_socket(const char *host, int port, int *p_client_socket_out, str
 	if (setsock_ret == -1) {
         fprintf(stderr, "Can not setsockopt 'SO_RCVTIMEO'");
         close_socket(client_socket);
-        return STATUS_ERROR;
+        return INIT_CLIENT_SOCKET_SETSOCKOPT_ERROR;
     }
 
 	struct sockaddr_in server_endpoint; memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
@@ -54,7 +54,7 @@ int init_client_socket(const char *host, int port, int *p_client_socket_out, str
     if (gai_ret != 0) {
         fprintf(stderr, "Cannot resolve host '%s': %s\n", host, gai_strerror(gai_ret));
         close_socket(client_socket);
-        return STATUS_ERROR;
+        return INIT_CLIENT_SOCKET_GETADDRINFO_ERROR;
     }
 
     struct sockaddr_in *resolved_addr = (struct sockaddr_in *) result->ai_addr;
@@ -68,34 +68,34 @@ int init_client_socket(const char *host, int port, int *p_client_socket_out, str
 
     memcpy(p_server_endpoint_out, &server_endpoint, sizeof(struct sockaddr_in));
 
-    return STATUS_SUCCESS;
+    return CLIENT_SOCKET_SUCCESS;
 }
 
-int pack_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id) {
+client_socket_status_e pack_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id) {
     data->hdr.type = PROTO_SENSOR_DATA;
     data->hdr.sensor_id = sensor_id;
     data->hdr.len = sizeof(float);
     float number = 0.0f;
     if (generate_random_float(&number) == STATUS_ERROR) {
         fprintf(stderr, "Could not generate random float\n");
-        return STATUS_ERROR;
+        return PACK_SENSOR_DATA_RANDOM_FLOAT_ERROR;
     }
     data->data = (*((uint32_t*) &number));
-    
-    return STATUS_SUCCESS;
+
+    return CLIENT_SOCKET_SUCCESS;
 }
 
-int serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serialized_data){
+client_socket_status_e serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serialized_data){
 
     serialized_data->hdr.type = htonl(data->hdr.type);
     serialized_data->hdr.sensor_id = htonl(data->hdr.sensor_id);
     serialized_data->hdr.len = htons(data->hdr.len);
     serialized_data->data = htonl(data->data);
 
-    return STATUS_SUCCESS;
+    return CLIENT_SOCKET_SUCCESS;
 }
 
-int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint) {
+client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint) {
 
 #ifdef DEBUG
     printf("Sending data to server...");
@@ -103,26 +103,26 @@ int send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr
 
     ssize_t sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
 
-	if ((sent_bytes == -1)) {
+    if (sent_bytes == -1) {
         fprintf(stderr, "Error sending data to server\n");
-        return STATUS_ERROR;
+        return SEND_TO_SOCKET_SENDTO_ERROR;
     }
 
     if (sent_bytes == 0) {
         fprintf(stderr, "No data sent to server\n");
-        return STATUS_ERROR;
+        return SEND_TO_SOCKET_NO_BYTES_SENT;
     }
 
     if (sent_bytes != sizeof(proto_sensor_data_t)) {
         fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%lu)\n", sent_bytes, sizeof(proto_sensor_data_t));
-        return STATUS_ERROR;
+        return SEND_TO_SOCKET_INCOMPLETE_SEND;
     }
 
 #ifdef DEBUG
 	printf("ok.  (%ld bytes sent)\n", sent_bytes);
 #endif
 
-    return STATUS_SUCCESS;
+    return CLIENT_SOCKET_SUCCESS;
 }
 
 // Path: src/cli/client_socket.c

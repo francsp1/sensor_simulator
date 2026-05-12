@@ -47,7 +47,7 @@ server_queues_status_e create_server_queues(queue_thread_safe_t **queues){
     return SERVER_QUEUES_SUCCESS;
 }
 
-server_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
+static server_queues_status_e _destroy_n_queues(queue_thread_safe_t **queues, uint32_t n){
     printf("Destroying queues\n");
 
     for (uint32_t i = 0; i < n; i++){

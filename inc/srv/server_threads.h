@@ -44,6 +44,19 @@ typedef struct server_thread_params {
 } server_thread_params_t;
 
 /**
+ * This enum defines the status codes returned by the server_threads functions
+ * @brief Status codes for the server_threads module
+ * @param SERVER_THREADS_SUCCESS The execution of the function was successful
+ * @param INIT_SERVER_THREADS_PTHREAD_CREATE_ERROR pthread_create() failed while creating a thread
+ * @typedef server_threads_status_e
+ */
+typedef enum server_threads_status {
+    SERVER_THREADS_SUCCESS = 0,
+
+    INIT_SERVER_THREADS_PTHREAD_CREATE_ERROR = -101,
+} server_threads_status_e;
+
+/**
  * This function initializes the server threads. The number of threads is equal to the number of sensors (NUMBER_OF_SENSORS macro in common.h)
  * @brief Initialize the server threads
  * @param tids Pointer to the array of pthread_t structures where the thread IDs will be stored
@@ -53,9 +66,9 @@ typedef struct server_thread_params {
  * @param server_logs_file Pointer to the logs_file_t stucture. The structure contains the the pointer (FILE *) for the corresponding logs file of the sensor and a pointer to a string that contains the file name (Ex.: the thread with the ID 0 will write the logs to a file named "sensor_0_server_logs.txt")
  * @param queues Pointer to the array of queue_thread_safe_t structures where the queues will be stored
  * @param handle_client Pointer to the function that will be executed by each thread
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
+ * @return server_threads_status_e value indicating the result of the operation
  */
-int init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *));
+server_threads_status_e init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *));
 
 #endif  // _THREADS_H
 

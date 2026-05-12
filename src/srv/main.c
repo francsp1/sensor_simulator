@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t tids[NUMBER_OF_SENSORS]; memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_t thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client) == STATUS_ERROR) {
+    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client) != SERVER_THREADS_SUCCESS) {
         fprintf(stderr, "Could not initialize all threads\n");
         cmdline_parser_free(&args);
         close_socket(server_socket);
@@ -179,6 +179,7 @@ int main(int argc, char *argv[]) {
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
         destroy_server_queues(queues);
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
     printf("Threads finished emptying queues and ended\n\n");
@@ -214,11 +215,16 @@ int main(int argc, char *argv[]) {
 
     if (close_socket(server_socket) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the socket\n");
+        close_logs_files(logs_files_flag, server_logs_files);
+        destroy_server_queues(queues);
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 
     if (close_logs_files(logs_files_flag, server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not close the server logs file\n");
+        destroy_server_queues(queues);
+        cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
 

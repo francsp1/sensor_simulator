@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     int client_socket = -1;
     struct sockaddr_in server_endpoint;
     memset(&server_endpoint, 0, sizeof(struct sockaddr_in));
-    if (init_client_socket(args.ip_arg, server_port, &client_socket, &server_endpoint) == STATUS_ERROR) {
+    if (init_client_socket(args.ip_arg, server_port, &client_socket, &server_endpoint) != CLIENT_SOCKET_SUCCESS) {
         fprintf(stderr, "Error initializing socket\n");
         exit(EXIT_FAILURE);
     }
@@ -122,17 +122,17 @@ void *handle_server(void *arg) {
         memset(&data, 0, sizeof(proto_sensor_data_t));
         memset(&serialized_data, 0, sizeof(proto_sensor_data_t));
 
-        if (pack_sensor_data(&data, id) == STATUS_ERROR) {
+        if (pack_sensor_data(&data, id) != CLIENT_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not pack sensor data\n");
             continue;
         }
 
-        if (serialize_sensor_data(&data, &serialized_data) == STATUS_ERROR) {
+        if (serialize_sensor_data(&data, &serialized_data) != CLIENT_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not serialize sensor data\n");
             continue;
         }
 
-        if (send_to_socket(client_socket, &serialized_data, server_endpoint) == STATUS_ERROR) {
+        if (send_to_socket(client_socket, &serialized_data, server_endpoint) != CLIENT_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not send data to server\n");
             continue;
         }
