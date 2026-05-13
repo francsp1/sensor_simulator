@@ -147,7 +147,7 @@ int join_threads(pthread_t *tids);
  * @param filename Pointer to the string that contains the file name
  * @struct logs_file_t
  */
-typedef struct {
+typedef struct logs_file{
     FILE *file;
     char *filename;
 } logs_file_t;
