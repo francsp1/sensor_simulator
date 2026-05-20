@@ -20,14 +20,14 @@
 /**
  * This function logs the sensor data
  * @brief Log the sensor data
- * @param logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @param sensor_data Pointer to the proto_sensor_data_t structure that contains the sensor data
+ * @param logs_file Pointer to the logs_file_s structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param sensor_data Pointer to the proto_sensor_data_s structure that contains the sensor data
  * @param thread_id ID of the thread/sensor that sent/received the sensor data
  * @param format Format of the log message. 
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  * @note this function is used by log_server_sensor_data and log_client_sensor_data and should not be called directly. 
  */
-static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format);
+static int _log_sensor_data(logs_file_s *logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id, const char* format);
 
 validate_port_status_e validate_port(int server_port) {
     if (server_port < 1024 || server_port > 65535) {
@@ -50,7 +50,7 @@ int close_socket(int server_socket){
     return STATUS_SUCCESS;
 }
 
-float get_float_value(proto_sensor_data_t *data){
+float get_float_value(proto_sensor_data_s *data){
     return *((float *)&(data->data));
 }
 
@@ -65,35 +65,26 @@ int generate_random_float(float *p_float_out) {
     return STATUS_SUCCESS; 
 }
 
-int get_current_time(char **buffer) {
-    time_t rawtime;
-    struct tm *timeinfo;
-
-    *buffer = (char *)calloc(TIME_BUFFER_SIZE, sizeof(char));
-    if (*buffer == NULL) {
-        fprintf(stderr, "Error allocating memory for time buffer\n");
+int get_current_time(time_str_s *buffer) {
+    if (buffer == NULL) {
+        fprintf(stderr, "Error getting current time: buffer cannot be null\n");
         return STATUS_ERROR;
     }
 
-    // Get current time
-    time(&rawtime);
-    if (rawtime == -1) {
+    time_t rawtime = 0;
+    if (time(&rawtime) == (time_t)-1) {
         fprintf(stderr, "Error getting current time\n");
-        free(*buffer);
-        return STATUS_ERROR;
-    }
-    timeinfo = localtime(&rawtime);
-    if (timeinfo == NULL) {
-        fprintf(stderr, "Error getting local time\n");
-        free(*buffer);
         return STATUS_ERROR;
     }
 
-    // Format time
-    size_t bytes = strftime(*buffer, TIME_BUFFER_SIZE, "%d-%m-%Y %H:%M:%S", timeinfo);
-    if (bytes == 0) {
+    struct tm timeinfo; memset(&timeinfo, 0, sizeof(struct tm));
+    if (localtime_r(&rawtime, &timeinfo) == NULL) {
+        fprintf(stderr, "Error getting local time\n");
+        return STATUS_ERROR;
+    }
+
+    if (strftime(buffer->data, TIME_BUFFER_SIZE, "%d-%m-%Y %H:%M:%S", &timeinfo) == 0) {
         fprintf(stderr, "Error formatting time\n");
-        free(*buffer);
         return STATUS_ERROR;
     }
 
@@ -114,7 +105,7 @@ int join_threads(pthread_t *tids){
     return STATUS_SUCCESS;
 }
 
-int _open_logs_files(int logs_files_flag, logs_file_t logs_file[], const char *format) {
+int _open_logs_files(int logs_files_flag, logs_file_s logs_file[], const char *format) {
 
     if (logs_files_flag == 0) {
         return STATUS_SUCCESS;
@@ -170,15 +161,15 @@ int _open_logs_files(int logs_files_flag, logs_file_t logs_file[], const char *f
     return STATUS_SUCCESS;
 }
 
-int open_server_logs_files(int logs_files_flag, logs_file_t logs_file[]){
+int open_server_logs_files(int logs_files_flag, logs_file_s logs_file[]){
     return _open_logs_files(logs_files_flag, logs_file, "logs/srv/sensor_%u_server_logs.txt");
 }
 
-int open_client_logs_files(int logs_files_flag, logs_file_t logs_file[]){
+int open_client_logs_files(int logs_files_flag, logs_file_s logs_file[]){
     return _open_logs_files(logs_files_flag, logs_file, "logs/cli/sensor_%u_client_logs.txt");
 }
 
-int _close_n_logs_files(int logs_files_flag, logs_file_t logs_file[], uint32_t n) {
+int _close_n_logs_files(int logs_files_flag, logs_file_s logs_file[], uint32_t n) {
 
     if (logs_files_flag == 0) {
         return STATUS_SUCCESS;
@@ -208,20 +199,20 @@ int _close_n_logs_files(int logs_files_flag, logs_file_t logs_file[], uint32_t n
     return error_flag ? STATUS_ERROR : STATUS_SUCCESS;
 }
 
-int close_logs_files(int logs_files_flag, logs_file_t logs_file[]){
+int close_logs_files(int logs_files_flag, logs_file_s logs_file[]){
     return _close_n_logs_files(logs_files_flag, logs_file, NUMBER_OF_SENSORS);
 }
 
-int log_server_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
+int log_server_sensor_data(logs_file_s *logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id){
     return _log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d received data from sensor %d. Value: %f\n");
 }
 
-int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id){
+int log_client_sensor_data(logs_file_s *logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id){
     return _log_sensor_data(logs_file, sensor_data, thread_id, "[%s] Thread %d sent data from sensor %d. Value: %f\n");
 }
 
 
-static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id, const char* format){
+static int _log_sensor_data(logs_file_s *logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id, const char* format){
     //printf("Logging sensor data\n");
     
     if (logs_file == NULL) {
@@ -239,17 +230,14 @@ static int _log_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_
         return STATUS_ERROR;
     }
 
-    char *time = NULL;
+    time_str_s time; memset(&time, 0, sizeof(time_str_s));
     if (get_current_time(&time) == STATUS_ERROR) {
         fprintf(stderr, "Error getting current time\n");
         return STATUS_ERROR;
     }
 
-    fprintf(logs_file->file, format, time, thread_id,sensor_data->hdr.sensor_id, get_float_value(sensor_data));
+    fprintf(logs_file->file, format, time.data, thread_id, sensor_data->hdr.sensor_id, get_float_value(sensor_data));
     fflush(logs_file->file);
-
-    free(time);
-    time = NULL;
     
     //printf("Sensor Data logged\n");
 

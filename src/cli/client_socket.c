@@ -71,7 +71,7 @@ client_socket_status_e init_client_socket(const char *host, int port, int *p_cli
     return CLIENT_SOCKET_SUCCESS;
 }
 
-client_socket_status_e pack_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id) {
+client_socket_status_e pack_sensor_data(proto_sensor_data_s *data, uint32_t sensor_id) {
     data->hdr.type = PROTO_SENSOR_DATA;
     data->hdr.sensor_id = sensor_id;
     data->hdr.len = sizeof(float);
@@ -85,7 +85,7 @@ client_socket_status_e pack_sensor_data(proto_sensor_data_t *data, uint32_t sens
     return CLIENT_SOCKET_SUCCESS;
 }
 
-client_socket_status_e serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serialized_data){
+client_socket_status_e serialize_sensor_data(proto_sensor_data_s *data, proto_sensor_data_s *serialized_data){
 
     serialized_data->hdr.type = htonl(data->hdr.type);
     serialized_data->hdr.sensor_id = htonl(data->hdr.sensor_id);
@@ -95,13 +95,13 @@ client_socket_status_e serialize_sensor_data(proto_sensor_data_t *data, proto_se
     return CLIENT_SOCKET_SUCCESS;
 }
 
-client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint) {
+client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, struct sockaddr_in *server_endpoint) {
 
 #ifdef DEBUG
     printf("Sending data to server...");
 #endif
 
-    ssize_t sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_t), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
+    ssize_t sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_s), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
 
     if (sent_bytes == -1) {
         fprintf(stderr, "Error sending data to server\n");
@@ -113,8 +113,8 @@ client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_t *da
         return SEND_TO_SOCKET_NO_BYTES_SENT;
     }
 
-    if (sent_bytes != sizeof(proto_sensor_data_t)) {
-        fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%lu)\n", sent_bytes, sizeof(proto_sensor_data_t));
+    if (sent_bytes != sizeof(proto_sensor_data_s)) {
+        fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%lu)\n", sent_bytes, sizeof(proto_sensor_data_s));
         return SEND_TO_SOCKET_INCOMPLETE_SEND;
     }
 

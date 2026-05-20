@@ -99,7 +99,7 @@ server_queues_status_e print_server_queue(const queue_thread_safe_t *queue){
     doubly_node_t *current = base_node->next;
     while (current != base_node) {
 
-        proto_sensor_data_t *data = (proto_sensor_data_t *) current->element;
+        proto_sensor_data_s *data = (proto_sensor_data_s *) current->element;
 
         printf("List[%d]: Sensor id: %d, Value: %f, (Prev: %p  | Node addr: %p | Next: %p)\n", aux, data->hdr.sensor_id, get_float_value(data), (void *) current->previous, (void *) current, (void *) current->next);
         current = current->next;

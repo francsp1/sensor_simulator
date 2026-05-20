@@ -83,7 +83,7 @@ Each `.c` file must contain:
 |---|---|---|
 | Functions (public) | `snake_case` | `init_server_socket`, `receive_from_socket` |
 | Functions (static/internal) | `_snake_case` (leading underscore) | `_destroy_n_queues`, `_open_logs_files` |
-| Struct typedefs | `snake_case_t` | `server_thread_params_t`, `logs_file_t` |
+| Struct typedefs | `snake_case_s` | `server_thread_params_s`, `logs_file_s` |
 | Enum typedefs | `snake_case_e` | `server_socket_status_e`, `client_socket_status_e` |
 | Macros / constants | `UPPER_CASE` | `NUMBER_OF_SENSORS`, `MAX_BUFFER_SIZE` |
 | Enum values | `UPPER_CASE` | `SERVER_SOCKET_SUCCESS`, `INIT_SERVER_SOCKET_BIND_ERROR` |
@@ -93,13 +93,13 @@ Each `.c` file must contain:
 
 ### Struct and Typedef Pattern
 
-Always define structs together with their typedef. The struct tag and the typedef name must match (minus the `_t` suffix):
+Always define structs together with their typedef. The struct tag and the typedef name must match (minus the `_s` suffix):
 
 ```c
 typedef struct server_thread_params {
     uint32_t id;
     int server_socket;
-} server_thread_params_t;
+} server_thread_params_s;
 ```
 
 ---
@@ -206,9 +206,9 @@ typedef enum module_status { ... } module_status_e;
  * @param id Thread ID.
  * @param server_socket Server socket file descriptor.
  * @struct server_thread_params
- * @typedef server_thread_params_t
+ * @typedef server_thread_params_s
  */
-typedef struct server_thread_params { ... } server_thread_params_t;
+typedef struct server_thread_params { ... } server_thread_params_s;
 ```
 
 ### Function
@@ -310,11 +310,11 @@ Network protocol structs must use `__attribute__((packed))` and be verified with
 
 ```c
 typedef struct proto_hdr {
-    proto_type_t type;
+    proto_type_s type;
     uint32_t sensor_id;
     uint16_t len;
-} __attribute__((packed)) proto_hdr_t;
-_Static_assert(sizeof(proto_hdr_t) == 10, "proto_hdr_t must be 10 bytes");
+} __attribute__((packed)) proto_hdr_s;
+_Static_assert(sizeof(proto_hdr_s) == 10, "proto_hdr_s must be 10 bytes");
 ```
 
 ---

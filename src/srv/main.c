@@ -57,14 +57,13 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    char *time = NULL;
+    time_str_s time; memset(&time, 0, sizeof(time_str_s));
     if (get_current_time(&time) == STATUS_ERROR) {
         fprintf(stderr, "Could not get current time\n");
         cmdline_parser_free(&args);
         exit(EXIT_FAILURE);
     }
-    printf("Server started at %s\n", time);
-    free(time);
+    printf("Server started at %s\n", time.data);
     
 
     int server_port = args.port_arg;   
@@ -82,7 +81,7 @@ int main(int argc, char *argv[]) {
     }
 
     int logs_files_flag = args.logs_files_flag;
-    logs_file_t server_logs_files[NUMBER_OF_SENSORS]; memset(server_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
+    logs_file_s server_logs_files[NUMBER_OF_SENSORS]; memset(server_logs_files, 0, sizeof(logs_file_s) * NUMBER_OF_SENSORS);
     if (open_server_logs_files(logs_files_flag, server_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not open all the server logs files\n");
         cmdline_parser_free(&args);
@@ -100,7 +99,7 @@ int main(int argc, char *argv[]) {
     }
 
     pthread_t tids[NUMBER_OF_SENSORS]; memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
-    server_thread_params_t thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_t) * NUMBER_OF_SENSORS);
+    server_thread_params_s thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_s) * NUMBER_OF_SENSORS);
     if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client) != SERVER_THREADS_SUCCESS) {
         fprintf(stderr, "Could not initialize all threads\n");
         cmdline_parser_free(&args);
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
     uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
-    proto_sensor_data_t *data = NULL;
+    proto_sensor_data_s *data = NULL;
     while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow 
         
         if (receive_from_socket(server_socket, buffer) != SERVER_SOCKET_SUCCESS) {
@@ -127,7 +126,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
-        data = calloc(1, sizeof(proto_sensor_data_t )); // The corresponding thread will free this memory
+        data = calloc(1, sizeof(proto_sensor_data_s )); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store sensor data\n");
             continue;
@@ -252,16 +251,16 @@ void *handle_client(void *arg) {
     sigaddset(&mask, SIGINT);
     pthread_sigmask(SIG_BLOCK, &mask, NULL);
 
-    server_thread_params_t *params = (server_thread_params_t *) arg;
+    server_thread_params_s *params = (server_thread_params_s *) arg;
     //printf("Thread %d is waiting\n", params->id);
     
     uint32_t id = params->id;
     //int server_socket = params->server_socket;
     queue_thread_safe_t *queue = params->queue;
-    logs_file_t *server_logs_file = params->server_logs_file;
+    logs_file_s *server_logs_file = params->server_logs_file;
     atomic_bool *main_thread_done = params->main_thread_done;
 
-    proto_sensor_data_t *data = NULL;
+    proto_sensor_data_s *data = NULL;
 
     while (1) {
         pthread_mutex_lock(&queue->mutex);  // Lock before checking queue size

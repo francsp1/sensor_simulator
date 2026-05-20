@@ -52,32 +52,32 @@ typedef enum client_socket_status {
 client_socket_status_e init_client_socket(const char *host, int port, int *p_client_socket_out, struct sockaddr_in *p_server_endpoint_out);
 
 /**
- * This function packs the data to be sent to the server in the proto_sensor_data_t structure
+ * This function packs the data to be sent to the server in the proto_sensor_data_s structure
  * @brief Pack sensor data to the server
- * @param data Pointer to the proto_sensor_data_t structure where the data will be packed
+ * @param data Pointer to the proto_sensor_data_s structure where the data will be packed
  * @param sensor_id ID of the sensor that sends the data
  * @return client_socket_status_e value indicating the result of the operation
  */
-client_socket_status_e pack_sensor_data(proto_sensor_data_t *data, uint32_t sensor_id);
+client_socket_status_e pack_sensor_data(proto_sensor_data_s *data, uint32_t sensor_id);
 
 /**
  * This function serializes the sensor data to be sent to the server. Data is converted to network endianness
  * @brief Serialize sensor data
- * @param data Pointer to the proto_sensor_data_t structure where the data original data is stored in host endianness
- * @param serialized_data Pointer to the proto_sensor_data_t structure where the serialized data will be stored in network endianness
+ * @param data Pointer to the proto_sensor_data_s structure where the data original data is stored in host endianness
+ * @param serialized_data Pointer to the proto_sensor_data_s structure where the serialized data will be stored in network endianness
  * @return client_socket_status_e value indicating the result of the operation
  */
-client_socket_status_e serialize_sensor_data(proto_sensor_data_t *data, proto_sensor_data_t *serialized_data);
+client_socket_status_e serialize_sensor_data(proto_sensor_data_s *data, proto_sensor_data_s *serialized_data);
 
 /**
  * This function sends the serialized sensor data to the server
  * @brief Send sensor data to the server
  * @param client_socket Client socket to send the data
- * @param data Pointer to the proto_sensor_data_t structure where the serialized data to be sent is stored
+ * @param data Pointer to the proto_sensor_data_s structure where the serialized data to be sent is stored
  * @param server_endpoint Pointer to the server endpoint (struct sockaddr_in) to send the data to
  * @return client_socket_status_e value indicating the result of the operation
  */
-client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_t *data, struct sockaddr_in *server_endpoint);
+client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, struct sockaddr_in *server_endpoint);
 
 #endif // _CLIENT_SOCKET_H_
 

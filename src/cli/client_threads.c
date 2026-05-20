@@ -18,7 +18,7 @@
 
 #include "common.h"
 
-int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, int client_socket, struct sockaddr_in *server_endpoint, int logs_files_flag, logs_file_t  *client_logs_files, int packets_per_thread,void *(*handle_client) (void *)){
+client_queues_status_e init_client_threads(pthread_t *tids, client_thread_params_s *thread_params, int client_socket, struct sockaddr_in *server_endpoint, int logs_files_flag, logs_file_s  *client_logs_files, int packets_per_thread,void *(*handle_client) (void *)){
     printf("Initializing threads\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
@@ -33,12 +33,12 @@ int init_client_threads(pthread_t *tids, client_thread_params_t *thread_params, 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){
         if ((pthread_create(&tids[i], NULL, handle_client, &thread_params[i])) != 0){
             fprintf(stderr, "Error creating thread %d\n", i);
-            return STATUS_ERROR;
+            return INIT_CLIENT_THREADS_PTHREAD_CREATE_ERROR;
         }
     }
 
     printf("Threads initialized\n");
-    return STATUS_SUCCESS;
+    return CLIENT_QUEUES_SUCCESS;
 }
 
 // Path: src/cli/client_threads.c

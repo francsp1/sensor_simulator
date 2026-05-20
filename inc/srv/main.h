@@ -14,7 +14,7 @@
 /**
  * This is the function that will be executed by each thread. It will handle the client requests by removing the message (proto_send_data_t*) from the queue and log the data int the server logs file
  * @brief Handle the client received mesaages
- * @param arg Pointer to the server_thread_params_t structure that contains the thread parameters
+ * @param arg Pointer to the server_thread_params_s structure that contains the thread parameters
  * @return NULL
  */ 
 void *handle_client(void *arg);

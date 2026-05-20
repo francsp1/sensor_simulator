@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
     }
 
     int logs_files_flag = args.logs_files_flag;
-    logs_file_t client_logs_files[NUMBER_OF_SENSORS];
-    memset(client_logs_files, 0, sizeof(logs_file_t) * NUMBER_OF_SENSORS);
+    logs_file_s client_logs_files[NUMBER_OF_SENSORS];
+    memset(client_logs_files, 0, sizeof(logs_file_s) * NUMBER_OF_SENSORS);
     if (open_client_logs_files(logs_files_flag, client_logs_files) == STATUS_ERROR) {
         fprintf(stderr, "Could not open all the client logs files\n");
         close_socket(client_socket);
@@ -69,9 +69,9 @@ int main(int argc, char *argv[]) {
 
     pthread_t tids[NUMBER_OF_SENSORS];
     memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
-    client_thread_params_t thread_params[NUMBER_OF_SENSORS];
-    memset(thread_params, 0, sizeof(client_thread_params_t) * NUMBER_OF_SENSORS);
-    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, logs_files_flag, client_logs_files, packets_per_sensor, handle_server) == STATUS_ERROR) {
+    client_thread_params_s thread_params[NUMBER_OF_SENSORS];
+    memset(thread_params, 0, sizeof(client_thread_params_s) * NUMBER_OF_SENSORS);
+    if (init_client_threads(tids, thread_params, client_socket, &server_endpoint, logs_files_flag, client_logs_files, packets_per_sensor, handle_server) != CLIENT_QUEUES_SUCCESS) {
         fprintf(stderr, "Could not initialize all threads\n");
         close_socket(client_socket);
         close_logs_files(logs_files_flag, client_logs_files);
@@ -101,26 +101,26 @@ int main(int argc, char *argv[]) {
 }
 
 void *handle_server(void *arg) { 
-    client_thread_params_t *params = (client_thread_params_t *) arg;
+    client_thread_params_s *params = (client_thread_params_s *) arg;
     
     struct sockaddr_in *server_endpoint = params->server_endpoint;
     uint32_t id = params->id;
     int client_socket = params->client_socket;
-    logs_file_t *client_logs_file = params->client_logs_file;
+    logs_file_s *client_logs_file = params->client_logs_file;
     int packets_per_thread = params->packets_per_sensor;
 
     struct timespec delay = {0};
     delay.tv_sec = 0;
     delay.tv_nsec = DELAY_MS * 1000000; // Convert milliseconds to nanoseconds
 
-    proto_sensor_data_t data;
-    proto_sensor_data_t serialized_data;
+    proto_sensor_data_s data;
+    proto_sensor_data_s serialized_data;
 
     srand(time(NULL) * id);
     
     while (packets_per_thread) {
-        memset(&data, 0, sizeof(proto_sensor_data_t));
-        memset(&serialized_data, 0, sizeof(proto_sensor_data_t));
+        memset(&data, 0, sizeof(proto_sensor_data_s));
+        memset(&serialized_data, 0, sizeof(proto_sensor_data_s));
 
         if (pack_sensor_data(&data, id) != CLIENT_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not pack sensor data\n");

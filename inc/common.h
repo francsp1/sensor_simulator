@@ -25,39 +25,39 @@
 #define SENSOR_RATE (10000) // Define the desired frequency in Hz
 #define DELAY_MS (1000 / SENSOR_RATE) // Calculate delay in milliseconds
 
-#define TIME_BUFFER_SIZE (20) // Size of the buffer to store the time string
+#define TIME_BUFFER_SIZE ( (size_t) 20) // Size of the buffer to store the time string
 
 
 /**
  * This type defines the possible types of messages that can be sent between the server and the clients
  * @brief Types of messages that can be sent between the server and the clients
  * @param PROTO_SENSOR_DATA Message that contains the sensor data sent by the client to the server
- * @typedef proto_type_t
+ * @typedef proto_type_s
  */
-typedef uint32_t proto_type_t;
+typedef uint32_t proto_type_s;
 
 /**
  * This macro defines the type of the message that contains the sensor data sent by the client to the server
  * @brief Type of the message that contains the sensor data sent by the client to the server
- * @note This macro is used to set the type field of the proto_hdr_t structure when sending the sensor data from the client to the server
+ * @note This macro is used to set the type field of the proto_hdr_s structure when sending the sensor data from the client to the server
  */
-#define PROTO_SENSOR_DATA ( (proto_type_t) (0u))
+#define PROTO_SENSOR_DATA ( (proto_type_s) (0u))
 
 /**
  * This structure defines the header of the messages that will be exchanged between the server and the clients
  * @brief Header of the messages
- * @param type Type of the message (proto_type_t)
+ * @param type Type of the message (proto_type_s)
  * @param sensor_id Sensor ID
  * @param len Length of the data 
  * @struct proto_hdr
- * @typedef proto_hdr_t
+ * @typedef proto_hdr_s
  */
 typedef struct proto_hdr {
-    proto_type_t type;
+    proto_type_s type;
     uint32_t sensor_id;
     uint16_t len;
-} __attribute__((packed)) proto_hdr_t;
-_Static_assert(sizeof(proto_hdr_t) == 10, "proto_hdr_t must be 10 bytes");
+} __attribute__((packed)) proto_hdr_s;
+_Static_assert(sizeof(proto_hdr_s) == 10, "proto_hdr_s must be 10 bytes");
 
 /**
  * This structure defines the messages that the client will send to the server with the sensor data
@@ -65,13 +65,13 @@ _Static_assert(sizeof(proto_hdr_t) == 10, "proto_hdr_t must be 10 bytes");
  * @param hdr Header of the message
  * @param data Data of the message
  * @struct proto_sensor_data
- * @typedef proto_sensor_data_t
+ * @typedef proto_sensor_data_s
  */
 typedef struct proto_sensor_data{
-    proto_hdr_t hdr;
+    proto_hdr_s hdr;
     uint32_t data;
-} __attribute__((packed)) proto_sensor_data_t;
-_Static_assert(sizeof(proto_sensor_data_t) == 14, "proto_sensor_data_t must be 14 bytes");
+} __attribute__((packed)) proto_sensor_data_s;
+_Static_assert(sizeof(proto_sensor_data_s) == 14, "proto_sensor_data_s must be 14 bytes");
 
 /**
  * This enum defines the status codes returned by the validate_port function
@@ -108,12 +108,12 @@ void disable_buffering(void);
 int close_socket(int server_socket);
 
 /**
- * This function extracts the float value from the proto_sensor_data_t structure
- * @brief Get the float value from the proto_sensor_data_t structure
- * @param data Pointer to the proto_sensor_data_t structure
+ * This function extracts the float value from the proto_sensor_data_s structure
+ * @brief Get the float value from the proto_sensor_data_s structure
+ * @param data Pointer to the proto_sensor_data_s structure
  * @return Float value
  */
-float get_float_value(proto_sensor_data_t *data);
+float get_float_value(proto_sensor_data_s *data);
 
 /**
  * This function generates a random float value
@@ -123,14 +123,23 @@ float get_float_value(proto_sensor_data_t *data);
  */
 int generate_random_float(float *p_float_out);
 
+
 /**
- * This function gets the current time in the format "YYYY-MM-DD HH:MM:SS"
- * @brief Get the current time
- * @param buffer Pointer to the buffer where the time string will be stored
- * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
- * @note The buffer must be freed by the caller
+ * This structure holds a formatted time string in the format "DD-MM-YYYY HH:MM:SS"
+ * @brief Fixed-size time string buffer
+ * @param data Buffer containing the null-terminated time string
+ * @struct time_str
+ * @typedef time_str_s
  */
-int get_current_time(char **buffer);
+typedef struct time_str { char data[TIME_BUFFER_SIZE]; } time_str_s;
+
+/**
+ * This function gets the current time in the format "DD-MM-YYYY HH:MM:SS"
+ * @brief Get the current time
+ * @param buffer Pointer to the time_str_s structure where the time string will be stored. Cannot be NULL.
+ * @return STATUS_SUCCESS (0) on success, STATUS_ERROR (-1) on failure
+ */
+int get_current_time(time_str_s *buffer);
 
 /**
  * This function joins the server/client threads 
@@ -145,42 +154,42 @@ int join_threads(pthread_t *tids);
  * @brief File where the logs will be stored. For example: server thread with ID 0 will write the logs to a file named "sensor_0_server_logs.txt" 
  * @param file Pointer to the file (FILE *)
  * @param filename Pointer to the string that contains the file name
- * @struct logs_file_t
+ * @struct logs_file_s
  */
 typedef struct logs_file{
     FILE *file;
     char *filename;
-} logs_file_t;
+} logs_file_s;
 
-int _open_logs_files(int logs_files_flag, logs_file_t logs_file[], const char *format);
+int _open_logs_files(int logs_files_flag, logs_file_s logs_file[], const char *format);
 
-int open_server_logs_files(int logs_files_flag, logs_file_t logs_file[]); 
+int open_server_logs_files(int logs_files_flag, logs_file_s logs_file[]); 
 
-int open_client_logs_files(int logs_files_flag, logs_file_t logs_file[]);
+int open_client_logs_files(int logs_files_flag, logs_file_s logs_file[]);
 
-int _close_n_logs_files(int logs_files_flag, logs_file_t logs_file[], uint32_t n);
+int _close_n_logs_files(int logs_files_flag, logs_file_s logs_file[], uint32_t n);
 
-int close_logs_files(int logs_files_flag, logs_file_t logs_file[]);
+int close_logs_files(int logs_files_flag, logs_file_s logs_file[]);
 
 /**
  * This function logs the sensor data received by the server
  * @brief Log the sensor data
- * @param server_logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @param sensor_data Pointer to the proto_sensor_data_t structure that contains the sensor data
+ * @param server_logs_file Pointer to the logs_file_s structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param sensor_data Pointer to the proto_sensor_data_s structure that contains the sensor data
  * @param thread_id ID of the thread that received the sensor data
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int log_server_sensor_data(logs_file_t *server_logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
+int log_server_sensor_data(logs_file_s *server_logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id);
 
 /**
  * This function logs the sensor data received by the client
  * @brief Log the sensor data
- * @param logs_file Pointer to the logs_file_t structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
- * @param sensor_data Pointer to the proto_sensor_data_t structure that contains the sensor data
+ * @param logs_file Pointer to the logs_file_s structure what contains the file descriptor of the logs file and a mutex to protect the file descriptor
+ * @param sensor_data Pointer to the proto_sensor_data_s structure that contains the sensor data
  * @param thread_id ID of the thread/sensor that sent the sensor data
  * @return STATUS_SUCCESS (0) on success, STATUS_FAILURE (-1) on failure
  */
-int log_client_sensor_data(logs_file_t *logs_file, proto_sensor_data_t *sensor_data, uint32_t thread_id);
+int log_client_sensor_data(logs_file_s *logs_file, proto_sensor_data_s *sensor_data, uint32_t thread_id);
 
 
 #endif // _COMMON_H_

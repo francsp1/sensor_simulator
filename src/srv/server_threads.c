@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-server_threads_status_e init_server_threads(pthread_t *tids, server_thread_params_t *thread_params, int server_socket, int logs_files_flag, logs_file_t *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *)) {
+server_threads_status_e init_server_threads(pthread_t *tids, server_thread_params_s *thread_params, int server_socket, int logs_files_flag, logs_file_s *server_logs_files, queue_thread_safe_t **queues, atomic_bool *main_thread_done, void *(*handle_client) (void *)) {
     printf("Initializing threads...\n");
 
     for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++){

@@ -29,7 +29,7 @@
  * @param RECEIVE_FROM_SOCKET_INTERUPTED_BY_SIGNAL An error occurred because the recvfrom function was interrupted by a signal in the receive_from_socket function
  * @param RECEIVE_FROM_SOCKET_RECVFROM_ERROR An error occurred while receiving data from the client in the receive_from_socket function
  * @param RECEIVE_FROM_SOCKET_EMPTY_PACKET An error occurred because an empty (size 0) UDP packet was received in the receive_from_socket function
- * @param RECEIVE_FROM_SOCKET_TRUNCATED_PACKET An error occurred because a truncated UDP packet was received (size smaller than sizeof(proto_sensor_data_t)) in the receive_from_socket function
+ * @param RECEIVE_FROM_SOCKET_TRUNCATED_PACKET An error occurred because a truncated UDP packet was received (size smaller than sizeof(proto_sensor_data_s)) in the receive_from_socket function
  * 
  * @param DESERIALIZE_SENSOR_DATA_NULL_POINTER An error occurred because a null pointer was passed to the deserialize_sensor_data function
  * 
@@ -74,10 +74,10 @@ server_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer);
  * This function deserializes the sensor data received from the client. Data is converted to host endianness
  * @brief Deserialize sensor data
  * @param buffer Pointer to the buffer where the data is stored in network endianness
- * @param p_data_out Pointer to the proto_sensor_data_t structure where the deserialized data will be stored in host endianness
+ * @param p_data_out Pointer to the proto_sensor_data_s structure where the deserialized data will be stored in host endianness
  * @return server_socket_status_e enum value indicating the result of the operation
  */
-server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out);
+server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_s *p_data_out);
 
 #endif // _SERVER_SOCKET_H_
 

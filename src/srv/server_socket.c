@@ -103,20 +103,20 @@ server_socket_status_e init_server_socket(int server_port, int *p_server_socket_
         return RECEIVE_FROM_SOCKET_EMPTY_PACKET;
     }
 
-    if (bytes_read < (ssize_t) sizeof(proto_sensor_data_t)) {
-        fprintf(stderr, "Received truncated packet (%zd bytes), expected at least %zu\n", bytes_read, sizeof(proto_sensor_data_t));
+    if (bytes_read < (ssize_t) sizeof(proto_sensor_data_s)) {
+        fprintf(stderr, "Received truncated packet (%zd bytes), expected at least %zu\n", bytes_read, sizeof(proto_sensor_data_s));
         return RECEIVE_FROM_SOCKET_TRUNCATED_PACKET;
     }
 
     return SERVER_SOCKET_SUCCESS;
 }
 
-server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_t *p_data_out) {
+server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_s *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
         return DESERIALIZE_SENSOR_DATA_NULL_POINTER;
     }
 
-    memcpy(p_data_out, buffer, sizeof(proto_sensor_data_t));
+    memcpy(p_data_out, buffer, sizeof(proto_sensor_data_s));
 
     p_data_out->hdr.type = ntohl(p_data_out->hdr.type);
     p_data_out->hdr.sensor_id = ntohl(p_data_out->hdr.sensor_id);
