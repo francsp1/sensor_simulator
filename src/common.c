@@ -50,8 +50,10 @@ int close_socket(int server_socket){
     return STATUS_SUCCESS;
 }
 
-float get_float_value(proto_sensor_data_s *data){
-    return *((float *)&(data->data));
+float get_float_value(const proto_sensor_data_s *data){
+    float value;
+    memcpy(&value, &data->data, sizeof(float));
+    return value;
 }
 
 int generate_random_float(float *p_float_out) {

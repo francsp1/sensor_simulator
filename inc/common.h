@@ -72,6 +72,8 @@ typedef struct proto_sensor_data{
     uint32_t data;
 } __attribute__((packed)) proto_sensor_data_s;
 _Static_assert(sizeof(proto_sensor_data_s) == 14, "proto_sensor_data_s must be 14 bytes");
+//_Static_assert(sizeof(float) == sizeof(uint32_t), "float and uint32_t must be the same size");
+//_Static_assert(sizeof(double) == sizeof(uint64_t), "double and uint64_t must be the same size");
 
 /**
  * This enum defines the status codes returned by the validate_port function
@@ -113,7 +115,7 @@ int close_socket(int server_socket);
  * @param data Pointer to the proto_sensor_data_s structure
  * @return Float value
  */
-float get_float_value(proto_sensor_data_s *data);
+float get_float_value(const proto_sensor_data_s *data);
 
 /**
  * This function generates a random float value
