@@ -1,5 +1,4 @@
-bin/server
-bin/client
+bin/*
 obj/*.o
 obj/cli/*.o
 obj/cli/args/*.o
