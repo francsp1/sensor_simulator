@@ -80,7 +80,7 @@ client_socket_status_e pack_sensor_data(proto_sensor_data_s *data, uint32_t sens
         fprintf(stderr, "Could not generate random float\n");
         return PACK_SENSOR_DATA_RANDOM_FLOAT_ERROR;
     }
-    data->data = (*((uint32_t*) &number));
+    memcpy(data->data, &number, sizeof(float));
 
     return CLIENT_SOCKET_SUCCESS;
 }
@@ -90,18 +90,24 @@ client_socket_status_e serialize_sensor_data(proto_sensor_data_s *data, proto_se
     serialized_data->hdr.type = htonl(data->hdr.type);
     serialized_data->hdr.sensor_id = htonl(data->hdr.sensor_id);
     serialized_data->hdr.len = htons(data->hdr.len);
-    serialized_data->data = htonl(data->data);
+
+    uint32_t raw_value = 0;
+    memcpy(&raw_value, data->data, sizeof(uint32_t));
+    raw_value = htonl(raw_value);
+    memcpy(serialized_data->data, &raw_value, sizeof(uint32_t));
 
     return CLIENT_SOCKET_SUCCESS;
 }
 
-client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, struct sockaddr_in *server_endpoint) {
+client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, size_t payload_len, struct sockaddr_in *server_endpoint) {
 
 #ifdef DEBUG
     printf("Sending data to server...");
 #endif
 
-    ssize_t sent_bytes = sendto(client_socket, data, sizeof(proto_sensor_data_s), 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
+    size_t total_len = sizeof(proto_hdr_s) + payload_len;
+
+    ssize_t sent_bytes = sendto(client_socket, data, total_len, 0, (struct sockaddr *) server_endpoint, sizeof(struct sockaddr_in));
 
     if (sent_bytes == -1) {
         fprintf(stderr, "Error sending data to server\n");
@@ -113,8 +119,8 @@ client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *da
         return SEND_TO_SOCKET_NO_BYTES_SENT;
     }
 
-    if (sent_bytes != sizeof(proto_sensor_data_s)) {
-        fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%lu)\n", sent_bytes, sizeof(proto_sensor_data_s));
+    if (sent_bytes != (ssize_t) total_len) {
+        fprintf(stderr, "Error: sent bytes (%ld) does not match expected size (%zu)\n", sent_bytes, total_len);
         return SEND_TO_SOCKET_INCOMPLETE_SEND;
     }
 

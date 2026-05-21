@@ -80,16 +80,20 @@ server_socket_status_e init_server_socket(int server_port, int *p_server_socket_
     return SERVER_SOCKET_SUCCESS;
 }
 
- server_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer){
+ server_socket_status_e receive_from_socket(int server_socket, uint8_t *buffer, size_t *p_bytes_read_out){
     socklen_t client_endpoint_length = sizeof(struct sockaddr_in);
     struct sockaddr_in client_endpoint; memset(&client_endpoint, 0, sizeof(struct sockaddr_in));
-    //ssize_t read_bytes;
+
+    if (buffer == NULL || p_bytes_read_out == NULL) {
+        fprintf(stderr, "Invalid buffer or output parameter pointer\n");
+        return RECEIVE_FROM_SOCKET_NULL_POINTER;
+    }
 
     //printf("Waiting for a client message...\n");
 
     ssize_t bytes_read = recvfrom(server_socket, buffer, ((sizeof(uint8_t) * MAX_BUFFER_SIZE) - 1) , 0, (struct sockaddr *) &client_endpoint, &client_endpoint_length);
     //printf("Received %ld bytes from %s:%d\n", bytes_read, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
-    if (bytes_read == -1) {
+    if (bytes_read < 0) {
         if (errno == EINTR) { // Interrupted by a signal 
             fprintf(stderr, "recvfrom() interrupted by a signal\n");
             return RECEIVE_FROM_SOCKET_INTERUPTED_BY_SIGNAL;
@@ -103,25 +107,80 @@ server_socket_status_e init_server_socket(int server_port, int *p_server_socket_
         return RECEIVE_FROM_SOCKET_EMPTY_PACKET;
     }
 
-    if (bytes_read < (ssize_t) sizeof(proto_sensor_data_s)) {
-        fprintf(stderr, "Received truncated packet (%zd bytes), expected at least %zu\n", bytes_read, sizeof(proto_sensor_data_s));
+    if (bytes_read < (ssize_t) sizeof(proto_hdr_s)) {
+        fprintf(stderr, "Received truncated UDP packet (%zu bytes), smaller than header size (%zu bytes)\n", (size_t) bytes_read, sizeof(proto_hdr_s));
         return RECEIVE_FROM_SOCKET_TRUNCATED_PACKET;
     }
+
+    if (bytes_read == (ssize_t) sizeof(proto_hdr_s)) {
+        fprintf(stderr, "Received header-only packet (%zd bytes) with no payload\n", bytes_read);
+        return RECEIVE_FROM_SOCKET_NO_PAYLOAD;
+    }
+
+    if (bytes_read > (ssize_t) (sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE)) {
+        fprintf(stderr, "Received UDP packet (%zu bytes) larger than maximum expected size (%zu bytes)\n", (size_t) bytes_read, sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE);
+        return RECEIVE_FROM_SOCKET_OVERSIZED_PACKET;
+    }
+
+    *p_bytes_read_out = (size_t) bytes_read;
 
     return SERVER_SOCKET_SUCCESS;
 }
 
-server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_s *p_data_out) {
+server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, size_t bytes_read, proto_sensor_data_s *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
         return DESERIALIZE_SENSOR_DATA_NULL_POINTER;
     }
 
-    memcpy(p_data_out, buffer, sizeof(proto_sensor_data_s));
+    memcpy(&p_data_out->hdr, buffer, sizeof(proto_hdr_s));
 
     p_data_out->hdr.type = ntohl(p_data_out->hdr.type);
     p_data_out->hdr.sensor_id = ntohl(p_data_out->hdr.sensor_id);
     p_data_out->hdr.len = ntohs(p_data_out->hdr.len);
-    p_data_out->data = ntohl(p_data_out->data);
+
+    uint16_t len = p_data_out->hdr.len;
+
+    if (len == 0) {
+        fprintf(stderr, "Header declares a payload length of 0 bytes\n");
+        return DESERIALIZE_SENSOR_DATA_ZERO_LENGTH;
+    }
+
+    if (len > MAX_PAYLOAD_SIZE) {
+        fprintf(stderr, "Declared payload length (%u) exceeds the maximum (%zu)\n", len, MAX_PAYLOAD_SIZE);
+        return DESERIALIZE_SENSOR_DATA_INVALID_LEN;
+    }
+
+    if (bytes_read < sizeof(proto_hdr_s) + len) {
+        fprintf(stderr, "Received truncated packet (%zu bytes), expected %zu\n", bytes_read, sizeof(proto_hdr_s) + len);
+        return DESERIALIZE_SENSOR_DATA_TRUNCATED_PACKET;
+    }
+
+    if (bytes_read > sizeof(proto_hdr_s) + len) {
+        fprintf(stderr, "Received packet (%zu bytes) larger than expected (%zu bytes)\n", bytes_read, sizeof(proto_hdr_s) + len);
+        return DESERIALIZE_SENSOR_DATA_OVERSIZED_PACKET;
+    }
+
+    if (p_data_out->hdr.type != PROTO_SENSOR_DATA) {
+        fprintf(stderr, "Invalid message type: expected %u, got %u\n", PROTO_SENSOR_DATA, p_data_out->hdr.type);
+        return DESERIALIZE_SENSOR_DATA_INVALID_TYPE;
+    }
+
+    if (p_data_out->hdr.sensor_id >= NUMBER_OF_SENSORS) {
+        fprintf(stderr, "Invalid sensor ID: expected 0-%u, got %u\n", NUMBER_OF_SENSORS - 1, p_data_out->hdr.sensor_id);
+        return DESERIALIZE_SENSOR_DATA_INVALID_SENSOR_ID;
+    }
+
+    if (len != sizeof(float)) {
+        fprintf(stderr, "Invalid payload length for sensor data: expected %zu, got %u\n", sizeof(float), len);
+        return DESERIALIZE_SENSOR_DATA_INVALID_LEN;
+    }
+
+    memcpy(p_data_out->data, buffer + sizeof(proto_hdr_s), len);
+
+    uint32_t raw_value = 0;
+    memcpy(&raw_value, p_data_out->data, sizeof(uint32_t));
+    raw_value = ntohl(raw_value);
+    memcpy(p_data_out->data, &raw_value, sizeof(uint32_t));
 
     return SERVER_SOCKET_SUCCESS;
 }

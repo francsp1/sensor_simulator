@@ -27,6 +27,8 @@
 
 #define TIME_BUFFER_SIZE ( (size_t) 20) // Size of the buffer to store the time string
 
+#define MAX_PAYLOAD_SIZE ( (size_t) 256) // Maximum size of the sensor data payload buffer
+
 
 /**
  * This type defines the possible types of messages that can be sent between the server and the clients
@@ -63,17 +65,18 @@ _Static_assert(sizeof(proto_hdr_s) == 10, "proto_hdr_s must be 10 bytes");
  * This structure defines the messages that the client will send to the server with the sensor data
  * @brief Messages exchanged between the server and the clients
  * @param hdr Header of the message
- * @param data Data of the message
+ * @param data Variable-length payload buffer. Only the first hdr.len bytes are meaningful and sent on the wire.
  * @struct proto_sensor_data
  * @typedef proto_sensor_data_s
  */
 typedef struct proto_sensor_data{
     proto_hdr_s hdr;
-    uint32_t data;
+    uint8_t data[MAX_PAYLOAD_SIZE];
 } __attribute__((packed)) proto_sensor_data_s;
-_Static_assert(sizeof(proto_sensor_data_s) == 14, "proto_sensor_data_s must be 14 bytes");
+_Static_assert(sizeof(proto_sensor_data_s) == sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE, "proto_sensor_data_s must be header plus payload buffer");
 //_Static_assert(sizeof(float) == sizeof(uint32_t), "float and uint32_t must be the same size");
 //_Static_assert(sizeof(double) == sizeof(uint64_t), "double and uint64_t must be the same size");
+_Static_assert(sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE <= MAX_BUFFER_SIZE - 1, "header plus MAX_PAYLOAD_SIZE must fit within the bytes recvfrom reads (MAX_BUFFER_SIZE - 1)");
 
 /**
  * This enum defines the status codes returned by the validate_port function

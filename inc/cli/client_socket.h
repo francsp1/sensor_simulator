@@ -74,10 +74,11 @@ client_socket_status_e serialize_sensor_data(proto_sensor_data_s *data, proto_se
  * @brief Send sensor data to the server
  * @param client_socket Client socket to send the data
  * @param data Pointer to the proto_sensor_data_s structure where the serialized data to be sent is stored
+ * @param payload_len Number of payload bytes to send (the header is always sent in full)
  * @param server_endpoint Pointer to the server endpoint (struct sockaddr_in) to send the data to
  * @return client_socket_status_e value indicating the result of the operation
  */
-client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, struct sockaddr_in *server_endpoint);
+client_socket_status_e send_to_socket(int client_socket, proto_sensor_data_s *data, size_t payload_len, struct sockaddr_in *server_endpoint);
 
 #endif // _CLIENT_SOCKET_H_
 

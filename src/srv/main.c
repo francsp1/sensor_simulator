@@ -113,9 +113,10 @@ int main(int argc, char *argv[]) {
 
     uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
     proto_sensor_data_s *data = NULL;
-    while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow 
-        
-        if (receive_from_socket(server_socket, buffer) != SERVER_SOCKET_SUCCESS) {
+    size_t bytes_read = 0;
+    while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow
+
+        if (receive_from_socket(server_socket, buffer, &bytes_read) != SERVER_SOCKET_SUCCESS) {
             /*
             if (errno == EINTR) { // Interrupted by a signal
                 fprintf(stderr, "recvfrom() interrupted by a signal\n");
@@ -132,24 +133,12 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        if (deserialize_sensor_data(buffer, data) != SERVER_SOCKET_SUCCESS) {
+        if (deserialize_sensor_data(buffer, bytes_read, data) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data\n");
             free(data);
             continue;
         }
-        
 
-        if (data->hdr.type != PROTO_SENSOR_DATA) {
-            fprintf(stderr, "Invalid message type\n");
-            free(data);
-            continue;
-        }
-
-        if (data->hdr.sensor_id >= NUMBER_OF_SENSORS) {
-            fprintf(stderr, "Invalid sensor ID\n");
-            free(data);
-            continue;
-        }
         //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
@@ -162,6 +151,7 @@ int main(int argc, char *argv[]) {
         }
         */
         memset(buffer,0,sizeof(buffer));
+        bytes_read = 0;
     }
 
     atomic_store_explicit(&main_thread_done, true, memory_order_release);

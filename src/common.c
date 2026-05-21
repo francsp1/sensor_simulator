@@ -52,7 +52,7 @@ int close_socket(int server_socket){
 
 float get_float_value(const proto_sensor_data_s *data){
     float value;
-    memcpy(&value, &data->data, sizeof(float));
+    memcpy(&value, data->data, sizeof(float));
     return value;
 }
 

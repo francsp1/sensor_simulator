@@ -132,7 +132,7 @@ void *handle_server(void *arg) {
             continue;
         }
 
-        if (send_to_socket(client_socket, &serialized_data, server_endpoint) != CLIENT_SOCKET_SUCCESS) {
+        if (send_to_socket(client_socket, &serialized_data, data.hdr.len, server_endpoint) != CLIENT_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not send data to server\n");
             continue;
         }
