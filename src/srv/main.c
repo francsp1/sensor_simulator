@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        if (deserialize_sensor_data(buffer, data) != SERVER_SOCKET_SUCCESS) {
+        if (deserialize_payload(buffer, data) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data\n");
             free(data);
             continue;
@@ -163,6 +163,7 @@ int main(int argc, char *argv[]) {
         }
         */
         memset(buffer,0,sizeof(buffer));
+        data = NULL;
         bytes_read = 0;
     }
 

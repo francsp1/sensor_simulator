@@ -34,8 +34,7 @@
  * @param RECEIVE_FROM_SOCKET_NO_PAYLOAD An error occurred because a header-only UDP packet (no payload bytes) was received in the receive_from_socket function
  * @param RECEIVE_FROM_SOCKET_OVERSIZED_PACKET An error occurred because a UDP packet larger than the header plus MAX_PAYLOAD_SIZE was received in the receive_from_socket function
  *
- * @param DESERIALIZE_SENSOR_DATA_NULL_POINTER An error occurred because a null pointer was passed to the deserialize_sensor_data function
- * @param DESERIALIZE_SENSOR_DATA_UNEXPECTED_LEN An error occurred because the header declared a payload length that is not the expected size for sensor data in the deserialize_sensor_data function
+ * @param DESERIALIZE_HEADER_NULL_POINTER An error occurred because a null pointer was passed to the deserialize_header function
  *
  * @param VALIDATE_HEADER_NULL_POINTER An error occurred because a null pointer was passed to the validate_header function
  * @param VALIDATE_HEADER_INVALID_TYPE An error occurred because the header declared a message type other than PROTO_SENSOR_DATA in the validate_header function
@@ -44,6 +43,9 @@
  * @param VALIDATE_HEADER_INVALID_LEN An error occurred because the header declared a payload length larger than MAX_PAYLOAD_SIZE in the validate_header function
  * @param VALIDATE_HEADER_TRUNCATED_PACKET An error occurred because the received packet was smaller than the header plus the declared payload length in the validate_header function
  * @param VALIDATE_HEADER_OVERSIZED_PACKET An error occurred because the received packet was larger than the header plus the declared payload length in the validate_header function
+ *
+ * @param DESERIALIZE_PAYLOAD_NULL_POINTER An error occurred because a null pointer was passed to the deserialize_payload function
+ * @param DESERIALIZE_PAYLOAD_UNEXPECTED_LEN An error occurred because the header declared a payload length that is not the expected size for sensor data in the deserialize_payload function
  *
  * @typedef server_socket_status_e
  */
@@ -74,8 +76,8 @@ typedef enum server_socket_status {
     VALIDATE_HEADER_TRUNCATED_PACKET = -406,
     VALIDATE_HEADER_OVERSIZED_PACKET = -407,
 
-    DESERIALIZE_SENSOR_DATA_NULL_POINTER = -501,
-    DESERIALIZE_SENSOR_DATA_UNEXPECTED_LEN = -502,
+    DESERIALIZE_PAYLOAD_NULL_POINTER = -501,
+    DESERIALIZE_PAYLOAD_UNEXPECTED_LEN = -502,
 } server_socket_status_e;
 
 /**
@@ -123,7 +125,7 @@ server_socket_status_e validate_header(const size_t bytes_read, const proto_hdr_
  * @param p_data_out Pointer to the proto_sensor_data_s structure with the deserialized header, where the payload will be stored in host endianness
  * @return server_socket_status_e enum value indicating the result of the operation
  */
-server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_s *p_data_out);
+server_socket_status_e deserialize_payload(const uint8_t *buffer, proto_sensor_data_s *p_data_out);
 
 #endif // _SERVER_SOCKET_H_
 

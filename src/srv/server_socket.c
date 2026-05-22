@@ -181,16 +181,16 @@ server_socket_status_e validate_header(const size_t bytes_read, const proto_hdr_
     return SERVER_SOCKET_SUCCESS;
 }
 
-server_socket_status_e deserialize_sensor_data(const uint8_t *buffer, proto_sensor_data_s *p_data_out) {
+server_socket_status_e deserialize_payload(const uint8_t *buffer, proto_sensor_data_s *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
-        return DESERIALIZE_SENSOR_DATA_NULL_POINTER;
+        return DESERIALIZE_PAYLOAD_NULL_POINTER;
     }
 
     uint16_t len = p_data_out->hdr.len;
 
     if (len != sizeof(float)) {
         fprintf(stderr, "Invalid payload length for sensor data: expected %zu, got %u\n", sizeof(float), len);
-        return DESERIALIZE_SENSOR_DATA_UNEXPECTED_LEN;
+        return DESERIALIZE_PAYLOAD_UNEXPECTED_LEN;
     }
 
     memcpy(p_data_out->data, buffer + sizeof(proto_hdr_s), len);
