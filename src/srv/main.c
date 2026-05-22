@@ -133,7 +133,19 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        if (deserialize_sensor_data(buffer, bytes_read, data) != SERVER_SOCKET_SUCCESS) {
+        if (deserialize_header(buffer, &data->hdr) != SERVER_SOCKET_SUCCESS) {
+            fprintf(stderr, "Could not deserialize the sensor data header\n");
+            free(data);
+            continue;
+        }
+
+        if (validate_header(bytes_read, &data->hdr) != SERVER_SOCKET_SUCCESS) {
+            fprintf(stderr, "Received invalid header\n");
+            free(data);
+            continue;
+        }
+
+        if (deserialize_sensor_data(buffer, data) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data\n");
             free(data);
             continue;
