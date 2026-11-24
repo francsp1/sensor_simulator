@@ -122,14 +122,25 @@ server_socket_status_e init_server_socket(int server_port, int *p_server_socket_
         return RECEIVE_FROM_SOCKET_OVERSIZED_PACKET;
     }
 
+    if (bytes_read > (ssize_t) (sizeof(proto_sensor_data_s))) {
+        fprintf(stderr, "Received UDP packet (%zu bytes) larger than maximum expected size (%zu bytes)\n", (size_t) bytes_read, sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE);
+        return RECEIVE_FROM_SOCKET_OVERSIZED_PACKET;
+    }
+
     *p_bytes_read_out = (size_t) bytes_read;
 
     return SERVER_SOCKET_SUCCESS;
 }
 
-server_socket_status_e deserialize_header(const uint8_t *buffer, proto_hdr_s *p_hdr_out) {
+server_socket_status_e deserialize_header(const uint8_t *buffer, size_t bytes_read, proto_hdr_s *p_hdr_out) {
     if (buffer == NULL || p_hdr_out == NULL) {
         return DESERIALIZE_HEADER_NULL_POINTER;
+    }
+
+    if (bytes_read < sizeof(proto_hdr_s)) {
+        fprintf(stderr, "Received truncated header: expected at least %zu bytes, got %zu\n", sizeof(proto_hdr_s), bytes_read);
+
+        return DESERIALIZE_HEADER_TRUNCATED_BUFFER;
     }
 
     memcpy(p_hdr_out, buffer, sizeof(proto_hdr_s));
@@ -181,7 +192,7 @@ server_socket_status_e validate_header(const size_t bytes_read, const proto_hdr_
     return SERVER_SOCKET_SUCCESS;
 }
 
-server_socket_status_e deserialize_payload(const uint8_t *buffer, proto_sensor_data_s *p_data_out) {
+server_socket_status_e deserialize_payload(const uint8_t *buffer, size_t bytes_read, proto_sensor_data_s *p_data_out) {
     if (buffer == NULL || p_data_out == NULL) {
         return DESERIALIZE_PAYLOAD_NULL_POINTER;
     }
@@ -191,6 +202,13 @@ server_socket_status_e deserialize_payload(const uint8_t *buffer, proto_sensor_d
     if (len != sizeof(float)) {
         fprintf(stderr, "Invalid payload length for sensor data: expected %zu, got %u\n", sizeof(float), len);
         return DESERIALIZE_PAYLOAD_UNEXPECTED_LEN;
+    }
+
+    size_t required_bytes = sizeof(proto_hdr_s) + len;
+
+    if (bytes_read < required_bytes) {
+        fprintf(stderr, "Received truncated payload: expected at least %zu bytes, got %zu\n", required_bytes, bytes_read);
+        return DESERIALIZE_PAYLOAD_TRUNCATED_BUFFER;
     }
 
     memcpy(p_data_out->data, buffer + sizeof(proto_hdr_s), len);

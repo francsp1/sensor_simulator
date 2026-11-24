@@ -74,8 +74,8 @@ typedef struct proto_sensor_data{
     uint8_t data[MAX_PAYLOAD_SIZE];
 } __attribute__((packed)) proto_sensor_data_s;
 _Static_assert(sizeof(proto_sensor_data_s) == sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE, "proto_sensor_data_s must be header plus payload buffer");
-//_Static_assert(sizeof(float) == sizeof(uint32_t), "float and uint32_t must be the same size");
-//_Static_assert(sizeof(double) == sizeof(uint64_t), "double and uint64_t must be the same size");
+_Static_assert(sizeof(float) == sizeof(uint32_t), "float and uint32_t must be the same size");
+_Static_assert(sizeof(double) == sizeof(uint64_t), "double and uint64_t must be the same size");
 _Static_assert(sizeof(proto_hdr_s) + MAX_PAYLOAD_SIZE <= MAX_BUFFER_SIZE - 1, "header plus MAX_PAYLOAD_SIZE must fit within the bytes recvfrom reads (MAX_BUFFER_SIZE - 1)");
 
 /**

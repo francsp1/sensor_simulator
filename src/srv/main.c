@@ -111,11 +111,11 @@ int main(int argc, char *argv[]) {
 
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
-    uint8_t buffer[MAX_BUFFER_SIZE]; memset(buffer, 0, sizeof(buffer));
-    proto_sensor_data_s *data = NULL;
-    size_t bytes_read = 0;
+    uint8_t buffer[MAX_BUFFER_SIZE];
     while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow
-
+        memset(buffer, 0, sizeof(buffer));
+        
+        size_t bytes_read = 0;
         if (receive_from_socket(server_socket, buffer, &bytes_read) != SERVER_SOCKET_SUCCESS) {
             /*
             if (errno == EINTR) { // Interrupted by a signal
@@ -127,34 +127,37 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
-        data = calloc(1, sizeof(proto_sensor_data_s )); // The corresponding thread will free this memory
+        proto_sensor_data_s *data = calloc(1, sizeof(proto_sensor_data_s )); // The corresponding thread will free this memory
         if (data == NULL) {
             fprintf(stderr, "Could not allocate memory to store sensor data\n");
             continue;
         }
 
-        if (deserialize_header(buffer, &data->hdr) != SERVER_SOCKET_SUCCESS) {
+        if (deserialize_header(buffer, bytes_read, &data->hdr) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data header\n");
             free(data);
+            data = NULL;
             continue;
         }
 
         if (validate_header(bytes_read, &data->hdr) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Received invalid header\n");
             free(data);
+            data = NULL;
             continue;
         }
 
-        if (deserialize_payload(buffer, data) != SERVER_SOCKET_SUCCESS) {
+        if (deserialize_payload(buffer, bytes_read, data) != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not deserialize the sensor data\n");
             free(data);
+            data = NULL;
             continue;
         }
 
         //printf("Sensor with the ID %d sent the value %f\n", data->hdr.sensor_id, get_float_value(data) );
 
         queue_insert_thread_safe(data, queues[data->hdr.sensor_id]);
-
+        
         //print_queue(queues[data->hdr.sensor_id]);
 
         /*
@@ -162,9 +165,6 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
-        memset(buffer,0,sizeof(buffer));
-        data = NULL;
-        bytes_read = 0;
     }
 
     atomic_store_explicit(&main_thread_done, true, memory_order_release);
