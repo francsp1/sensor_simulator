@@ -95,7 +95,6 @@ server_socket_status_e init_server_socket(int server_port, int *p_server_socket_
     //printf("Received %ld bytes from %s:%d\n", bytes_read, inet_ntoa(client_endpoint.sin_addr), ntohs(client_endpoint.sin_port));
     if (bytes_read < 0) {
         if (errno == EINTR) { // Interrupted by a signal 
-            fprintf(stderr, "recvfrom() interrupted by a signal\n");
             return RECEIVE_FROM_SOCKET_INTERRUPTED_BY_SIGNAL;
         }
         fprintf(stderr, "Error receiving data from client\n");

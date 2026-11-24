@@ -35,6 +35,7 @@
 #include "queue_thread_safe.h"
 
 volatile sig_atomic_t keep_running = 1;
+volatile sig_atomic_t received_signal = 0;
 
 int main(int argc, char *argv[]) {
     //For testing, print sizeof proto_type_e
@@ -100,8 +101,46 @@ int main(int argc, char *argv[]) {
 
     pthread_t tids[NUMBER_OF_SENSORS]; memset(tids, 0, sizeof(pthread_t) * NUMBER_OF_SENSORS);
     server_thread_params_s thread_params[NUMBER_OF_SENSORS]; memset(thread_params, 0, sizeof(server_thread_params_s) * NUMBER_OF_SENSORS);
-    if (init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client) != SERVER_THREADS_SUCCESS) {
+
+    sigset_t termination_signals;
+    sigset_t original_signal_mask;
+    sigemptyset(&termination_signals);
+    sigaddset(&termination_signals, SIGINT);
+    sigaddset(&termination_signals, SIGTERM);
+
+    if (pthread_sigmask(SIG_BLOCK, &termination_signals, &original_signal_mask) != 0) {
+        fprintf(stderr, "Could not block termination signals before creating threads\n");
+        cmdline_parser_free(&args);
+        close_socket(server_socket);
+        close_logs_files(logs_files_flag, server_logs_files);
+        destroy_server_queues(queues);
+        exit(EXIT_FAILURE);
+    }
+
+    server_threads_status_e threads_status = init_server_threads(tids, thread_params, server_socket, logs_files_flag, server_logs_files, queues, &main_thread_done, handle_client);
+
+    int restore_mask_status = pthread_sigmask(SIG_SETMASK, &original_signal_mask, NULL);
+
+    if (threads_status != SERVER_THREADS_SUCCESS) {
         fprintf(stderr, "Could not initialize all threads\n");
+        cmdline_parser_free(&args);
+        close_socket(server_socket);
+        close_logs_files(logs_files_flag, server_logs_files);
+        destroy_server_queues(queues);
+        exit(EXIT_FAILURE);
+    }
+
+    if (restore_mask_status != 0) {
+        fprintf(stderr, "Could not restore the main thread signal mask\n");
+        atomic_store_explicit(&main_thread_done, true, memory_order_release);
+
+        for (uint32_t i = 0; i < NUMBER_OF_SENSORS; i++) {
+            pthread_mutex_lock(&queues[i]->mutex);
+            pthread_cond_broadcast(&(queues[i]->cond));
+            pthread_mutex_unlock(&queues[i]->mutex);
+        }
+
+        join_threads(tids);
         cmdline_parser_free(&args);
         close_socket(server_socket);
         close_logs_files(logs_files_flag, server_logs_files);
@@ -112,17 +151,17 @@ int main(int argc, char *argv[]) {
     printf("Server listening for UDP messages on port %d\n", server_port);   
 
     uint8_t buffer[MAX_BUFFER_SIZE];
-    while (keep_running) { //Using the printf/fprintf to write to stdout/stderr is too slow
+    while (keep_running) {
         memset(buffer, 0, sizeof(buffer));
         
         size_t bytes_read = 0;
-        if (receive_from_socket(server_socket, buffer, &bytes_read) != SERVER_SOCKET_SUCCESS) {
-            /*
-            if (errno == EINTR) { // Interrupted by a signal
-                fprintf(stderr, "recvfrom() interrupted by a signal\n");
-                continue;
-            }
-            */
+        server_socket_status_e receive_status = receive_from_socket(server_socket, buffer, &bytes_read);
+
+        if (receive_status == RECEIVE_FROM_SOCKET_INTERRUPTED_BY_SIGNAL) {
+            break;
+        }
+
+        if (receive_status != SERVER_SOCKET_SUCCESS) {
             fprintf(stderr, "Could not read data from the socket\n");
             continue;
         }
@@ -165,6 +204,12 @@ int main(int argc, char *argv[]) {
             printf("Queue %d: %d\n", i, queue_get_number_of_elements_thread_safe(queues[i]));
         }
         */
+    }
+
+    if (received_signal == SIGINT) {
+        printf("\nSIGINT received; stopping server\n");
+    } else if (received_signal == SIGTERM) {
+        printf("\nSIGTERM received; stopping server\n");
     }
 
     atomic_store_explicit(&main_thread_done, true, memory_order_release);
@@ -248,12 +293,6 @@ int main(int argc, char *argv[]) {
 }
 
 void *handle_client(void *arg) { 
-    // Block SIGINT in the worker threads
-    sigset_t mask; memset(&mask, 0, sizeof(sigset_t));
-    sigemptyset(&mask);
-    sigaddset(&mask, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &mask, NULL);
-
     server_thread_params_s *params = (server_thread_params_s *) arg;
     //printf("Thread %d is waiting\n", params->id);
     
@@ -347,20 +386,8 @@ int init_signal_handlers(struct sigaction *sa) {
 }
 
 void signal_handler(int signum) {
-    int aux;	
-    aux = errno;
-    printf("\nSignal Received (%d)\n", signum);	
-    /*
-    void *array[10];
-    size_t size;
-
-    size = backtrace(array, 10);
-
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-    */
-    keep_running = 0;	
-
-    errno = aux;   
+    received_signal = signum;
+    keep_running = 0;
 }
 
 // Path: src/srv/main.c
